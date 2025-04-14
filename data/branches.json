@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "name": "Main Branch",
+    "location": "123 Business Ave, City",
+    "manager": "John Smith",
+    "staffCount": 5,
+    "isActive": true
+  },
+  {
+    "id": "2",
+    "name": "Downtown Branch",
+    "location": "456 Central St, Downtown",
+    "manager": "Emily Johnson",
+    "staffCount": 4,
+    "isActive": true
+  },
+  {
+    "id": "3",
+    "name": "Westside Branch",
+    "location": "789 West Blvd, Westside",
+    "manager": "Michael Brown",
+    "staffCount": 3,
+    "isActive": true
+  }
+]

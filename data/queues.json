@@ -1,0 +1,131 @@
+{
+  "activeQueues": [
+    {
+      "id": "1",
+      "name": "Main Reception Queue",
+      "branch": "Downtown Branch",
+      "branchId": "2",
+      "currentNumber": 3,
+      "totalInQueue": 8,
+      "estimatedWaitTime": "45 minutes",
+      "status": "active",
+      "createdAt": "2023-10-15 09:00 AM",
+      "maxCapacity": 50,
+      "estimatedServiceTime": 15,
+      "notifyCustomers": true,
+      "allowOnlineJoining": true,
+      "averageServiceTime": "15 minutes"
+    },
+    {
+      "id": "2",
+      "name": "Consultation Queue",
+      "branch": "Main Branch",
+      "branchId": "1",
+      "currentNumber": 5,
+      "totalInQueue": 12,
+      "estimatedWaitTime": "60 minutes",
+      "status": "active",
+      "createdAt": "2023-10-15 09:00 AM",
+      "maxCapacity": 50,
+      "estimatedServiceTime": 15,
+      "notifyCustomers": true,
+      "allowOnlineJoining": true,
+      "averageServiceTime": "20 minutes"
+    },
+    {
+      "id": "3",
+      "name": "Technical Support Queue",
+      "branch": "Westside Branch",
+      "branchId": "3",
+      "currentNumber": 2,
+      "totalInQueue": 4,
+      "estimatedWaitTime": "20 minutes",
+      "status": "paused",
+      "createdAt": "2023-10-15 09:00 AM",
+      "maxCapacity": 50,
+      "estimatedServiceTime": 15,
+      "notifyCustomers": true,
+      "allowOnlineJoining": true,
+      "averageServiceTime": "10 minutes"
+    }
+  ],
+  "customersInQueue": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "phone": "+1 (555) 123-4567",
+      "service": "Haircut",
+      "estimatedWait": "Now Serving",
+      "status": "current",
+      "joinedAt": "10:30 AM",
+      "priority": "normal",
+      "avatar": ""
+    },
+    {
+      "id": "2",
+      "name": "Jane Smith",
+      "phone": "+1 (555) 987-6543",
+      "service": "Manicure",
+      "estimatedWait": "15 min",
+      "status": "waiting",
+      "joinedAt": "10:35 AM",
+      "priority": "normal",
+      "avatar": ""
+    },
+    {
+      "id": "3",
+      "name": "Robert Johnson",
+      "phone": "+1 (555) 456-7890",
+      "service": "Facial",
+      "estimatedWait": "25 min",
+      "status": "waiting",
+      "joinedAt": "10:40 AM",
+      "priority": "high",
+      "avatar": ""
+    },
+    {
+      "id": "4",
+      "name": "Emily Williams",
+      "phone": "+1 (555) 789-0123",
+      "service": "Haircut",
+      "estimatedWait": "35 min",
+      "status": "waiting",
+      "joinedAt": "10:45 AM",
+      "priority": "normal",
+      "avatar": ""
+    },
+    {
+      "id": "5",
+      "name": "Michael Brown",
+      "phone": "+1 (555) 234-5678",
+      "service": "Beard Trim",
+      "estimatedWait": "45 min",
+      "status": "waiting",
+      "joinedAt": "10:50 AM",
+      "priority": "urgent",
+      "avatar": ""
+    }
+  ],
+  "services": [
+    {
+      "id": "1",
+      "name": "Haircut",
+      "duration": "30 min"
+    },
+    {
+      "id": "2",
+      "name": "Manicure",
+      "duration": "45 min"
+    },
+    {
+      "id": "3",
+      "name": "Facial",
+      "duration": "60 min"
+    },
+    {
+      "id": "4",
+      "name": "Beard Trim",
+      "duration": "15 min"
+    }
+  ]
+}

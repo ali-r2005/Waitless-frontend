@@ -1,0 +1,12 @@
+{
+  "currentUser": {
+    "id": "1",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1 (555) 123-4567",
+    "jobTitle": "Branch Manager",
+    "avatar": "",
+    "role": "branch_manager",
+    "createdAt": "January 15, 2023"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "languages": [
+    { "id": "en", "name": "English" },
+    { "id": "es", "name": "Spanish" },
+    { "id": "fr", "name": "French" },
+    { "id": "de", "name": "German" },
+    { "id": "zh", "name": "Chinese" }
+  ],
+  "timezones": [
+    { "id": "UTC", "name": "UTC (Coordinated Universal Time)" },
+    { "id": "EST", "name": "EST (Eastern Standard Time)" },
+    { "id": "CST", "name": "CST (Central Standard Time)" },
+    { "id": "MST", "name": "MST (Mountain Standard Time)" },
+    { "id": "PST", "name": "PST (Pacific Standard Time)" }
+  ],
+  "defaultSettings": {
+    "general": {
+      "businessName": "QueueMaster",
+      "defaultBranch": "1",
+      "language": "en",
+      "timezone": "UTC"
+    },
+    "notifications": {
+      "emailNotifications": true,
+      "smsNotifications": false,
+      "pushNotifications": true,
+      "notifyOnNewCustomer": true,
+      "notifyOnQueueUpdate": true,
+      "notifyOnStaffActivity": false,
+      "dailySummary": true
+    },
+    "queue": {
+      "defaultQueueCapacity": 50,
+      "defaultServiceTime": 15,
+      "allowCustomersToJoinOnline": true,
+      "allowCustomersToLeaveQueue": true,
+      "sendConfirmationMessages": true,
+      "autoStartQueues": false,
+      "queueDisplayMode": "standard"
+    }
+  }
+}

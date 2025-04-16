@@ -26,12 +26,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if user is authenticated by checking for the auth token
-  const authToken = request.headers.get("Authorization")
+  const authToken = request.cookies.get("auth_token")?.value
 
   // If there's no token and the path is not public, redirect to login
   if (!authToken) {
     const url = new URL("/auth/login", request.url)
-    url.searchParams.set("callbackUrl", encodeURI(pathname))
     return NextResponse.redirect(url)
   }
 

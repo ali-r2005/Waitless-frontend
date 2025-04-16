@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { LogOut, Loader2 } from "lucide-react"
 import { Button, type ButtonProps } from "@/components/ui/button"
-import { useAuth } from "@/contexts/auth-context"
-
+import { authService } from "@/lib/auth-service"
+import { useRouter } from "next/navigation"
 interface LogoutButtonProps extends ButtonProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
   showIcon?: boolean
@@ -12,15 +12,20 @@ interface LogoutButtonProps extends ButtonProps {
 
 export function LogoutButton({ variant = "ghost", showIcon = true, children, ...props }: LogoutButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const { logout } = useAuth()
-
+  const router = useRouter()
   const handleLogout = async () => {
     setIsLoading(true)
 
     try {
-      await logout()
+      const result = await authService.logout()
+      console.log("Logout result:", result)
+      if (result.success) {
+        router.push("/auth/login")
+      } else {
+        console.error("Logout failed:", result.error)
+      }
     } catch (error) {
-      console.error("Logout error:", error)
+      console.log("Logout error:", error)
     } finally {
       setIsLoading(false)
     }

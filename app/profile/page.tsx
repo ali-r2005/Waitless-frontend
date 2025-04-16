@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { DashboardLayout } from "@/components/sections/layouts/dashboard-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageHeader } from "@/components/ui/page-header"
 import { UserProfileCard } from "@/components/profile/user-profile-card"
@@ -11,25 +11,25 @@ import { ProfileForm } from "@/components/forms/profile-form"
 import { PasswordForm } from "@/components/forms/password-form"
 import { DeleteAccountForm } from "@/components/forms/delete-account-form"
 import { updatePassword, updateProfile } from "@/lib/auth-service"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth-context"
 import { toast } from "@/components/ui/use-toast"
 import type { PasswordFormValues, ProfileFormValues } from "@/types/user"
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
+  const { user, isLoading } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated and auth check is complete
   useEffect(() => {
-    if (!user && typeof window !== "undefined") {
+    if (!isLoading && !user && typeof window !== "undefined") {
       router.push("/auth/login?callback=/profile")
     }
-  }, [user, router])
+  }, [user, router, isLoading])
 
-  // If no user yet, show loading state
-  if (!user) {
+  // If still loading or no user yet, show loading state
+  if (isLoading || !user) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-screen">
@@ -40,7 +40,7 @@ export default function ProfilePage() {
   }
 
   async function handleProfileSubmit(data: ProfileFormValues) {
-    setIsLoading(true)
+    setIsSubmitting(true)
     try {
       const result = await updateProfile(data)
       
@@ -63,12 +63,12 @@ export default function ProfilePage() {
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
   async function handlePasswordSubmit(data: PasswordFormValues) {
-    setIsLoading(true)
+    setIsSubmitting(true)
     try {
       const result = await updatePassword({
         current_password: data.currentPassword,
@@ -95,7 +95,7 @@ export default function ProfilePage() {
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -144,14 +144,14 @@ export default function ProfilePage() {
                       jobTitle: user.jobTitle || "",
                     }}
                     onSubmit={handleProfileSubmit}
-                    isLoading={isLoading}
+                    isLoading={isSubmitting}
                   />
                 </TabsContent>
 
                 <TabsContent value="security" className="space-y-4 pt-4">
                   <PasswordForm 
                     onSubmit={handlePasswordSubmit} 
-                    isLoading={isLoading}
+                    isLoading={isSubmitting}
                   />
                   <DeleteAccountForm 
                     userEmail={user.email}

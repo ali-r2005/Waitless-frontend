@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AuthLayout } from "@/components/sections/layouts/auth-layout"
 import { authService } from "@/lib/auth-service"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth-context"
 import type { LoginFormValues } from "@/types/auth"
 
 export default function LoginPage() {

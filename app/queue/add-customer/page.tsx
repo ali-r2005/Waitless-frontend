@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { ArrowLeft, Loader2, UserPlus } from "lucide-react"
 
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { DashboardLayout } from "@/components/sections/layouts/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"

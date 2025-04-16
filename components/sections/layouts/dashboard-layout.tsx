@@ -86,8 +86,8 @@ export function DashboardLayout({
                   My Account
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <LogoutButton className="w-full justify-start" />
+              <DropdownMenuItem>
+                <LogoutButton className="w-full justify-start cursor-pointer" />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

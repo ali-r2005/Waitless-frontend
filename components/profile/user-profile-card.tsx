@@ -1,7 +1,16 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import type { User } from "@/contexts/auth-context"
+
+
+interface User {
+  id: string | number;
+  name: string;
+  email: string;
+  avatar?: string;
+  role: string;
+  createdAt?: string;
+}
 
 interface UserProfileCardProps {
   user: User

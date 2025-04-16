@@ -1,6 +1,6 @@
 import { Building2, Clock, Plus, Users } from "lucide-react"
 
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { DashboardLayout } from "@/components/sections/layouts/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"

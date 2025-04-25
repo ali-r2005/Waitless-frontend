@@ -20,16 +20,49 @@ export function getBranchById(id: string): Branch | undefined {
 }
 
 // Staff data functions
+const mockStaff: StaffMember[] = [
+  {
+    id: "1",
+    name: "John Smith",
+    email: "john.smith@example.com",
+    role: "Branch Manager",
+    branch: "Main Branch",
+    status: "active",
+    avatar: ""
+  },
+  {
+    id: "2",
+    name: "Emily Johnson",
+    email: "emily.johnson@example.com",
+    role: "Staff",
+    branch: "Downtown Branch",
+    status: "active",
+    avatar: ""
+  }
+]
+
+const mockPendingRequests: StaffRequest[] = [
+  {
+    id: "101",
+    name: "Jessica Lee",
+    email: "jessica.lee@example.com",
+    requestedRole: "Staff",
+    requestedBranch: "Downtown Branch",
+    requestDate: "2024-03-15",
+    avatar: ""
+  }
+]
+
 export function getStaffMembers(): StaffMember[] {
-  return staffData.staff as StaffMember[]
+  return mockStaff
 }
 
 export function getPendingStaffRequests(): StaffRequest[] {
-  return staffData.pendingRequests as StaffRequest[]
+  return mockPendingRequests
 }
 
 export function getStaffMemberById(id: string): StaffMember | undefined {
-  return getStaffMembers().find((staff) => staff.id === id)
+  return mockStaff.find((staff) => staff.id === id)
 }
 
 // Queue data functions

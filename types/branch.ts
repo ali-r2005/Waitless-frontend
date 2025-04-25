@@ -1,8 +1,10 @@
 export interface Branch {
-  id: string
+  id: number
   name: string
-  location: string
-  manager: string
-  staffCount: number
-  isActive: boolean
+  address: string
+  business_id: number
+  parent_id: number | null
+  created_at?: string
+  updated_at?: string
+  children?: Branch[]
 }

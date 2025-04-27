@@ -5,7 +5,6 @@ import type { Metadata } from "next"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth-context"
-
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -20,6 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
+    
     <html lang="en" suppressHydrationWarning>
       <head>
         <link
@@ -28,6 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <Navbar/>
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             {children}
@@ -39,3 +40,4 @@ export default function RootLayout({
 }
 
 import './globals.css'
+import { Navbar } from "@/components/sections/layouts/Navbar"

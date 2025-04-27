@@ -5,10 +5,12 @@ import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -24,6 +26,17 @@ export function Navbar() {
     }
   }
 
+  const handleLogoClick = () => {
+    // First try to scroll to home section if on main page
+    const homeSection = document.getElementById("home")
+    if (homeSection) {
+      scrollToSection("home")
+    } else {
+      // If not on main page, navigate to home page
+      router.push("/")
+    }
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="container mx-auto px-4">
@@ -36,7 +49,7 @@ export function Navbar() {
               width={120}
               height={120}
               className="cursor-pointer"
-              onClick={() => scrollToSection("home")}
+              onClick={handleLogoClick}
             />
           </div>
 

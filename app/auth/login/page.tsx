@@ -1,204 +1,165 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { Loader2 } from "lucide-react"
-
-import { loginSchema } from "@/lib/validations/auth"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AuthLayout } from "@/components/sections/layouts/auth-layout"
-import { authService } from "@/lib/auth-service"
-import { useAuth } from "@/lib/auth-context"
-import type { LoginFormValues } from "@/types/auth"
+import { useRouter } from "next/navigation"
+import Image from 'next/image'
+import styles from './login.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-  const status = searchParams.get("status")
-  const { login: setAuthUser } = useAuth()
-
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
+  const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [apiAvailable, setApiAvailable] = useState(true)
-  const [statusMessage, setStatusMessage] = useState<string | null>(
-    status === "reset-success"
-      ? "Your password has been reset successfully. Please log in with your new password."
-      : status === "logout"
-        ? "You have been logged out successfully."
-        : status === "expired"
-          ? "Your session has expired. Please log in again."
-          : status === "logout-error"
-            ? "You have been logged out, but there was an error communicating with the server."
-            : null
-  )
 
-  // Check if API is available
-  useEffect(() => {
-    const checkApiAvailability = async (): Promise<void> => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL
-        if (!apiUrl) {
-          setApiAvailable(false)
-          setError("API URL is not configured. Please contact the administrator.")
-          return
-        }
-
-        console.log("Checking API availability at:", apiUrl)
-        
-        // Just try to connect to the API without making a request
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
-        
-        await fetch(apiUrl, {
-          method: "GET",
-          signal: controller.signal
-        })
-        
-        clearTimeout(timeoutId)
-        console.log("API is available")
-        setApiAvailable(true)
-      } catch (error) {
-        const err = error as Error
-        console.error("API availability check failed:", err)
-        setApiAvailable(false)
-        setError(`Unable to connect to the authentication server (${err.message}). Please try again later or contact support.`)
-      }
-    }
-
-    checkApiAvailability()
-  }, [])
-
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  })
-
-  async function onSubmit(data: LoginFormValues) {
-    if (!apiAvailable) {
-      setError("Cannot log in: Authentication server is unavailable.")
-      return
-    }
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
     setIsLoading(true)
-    setError(null)
 
     try {
-      const result = await authService.login(data.email, data.password)
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          rememberMe,
+        }),
+      })
 
-      if (!result.success) {
-        setError(result.error || "An unexpected error occurred")
-        return
+      const data = await response.json()
+
+      if (data.success) {
+        router.push('/dashboard')
+      } else {
+        setError(data.message || 'Login failed. Please try again.')
       }
-
-      // Set user in auth context
-      if (result.user) {
-        setAuthUser(data.email, data.password)
-      }
-
-      router.push(callbackUrl)
-      router.refresh()
-    } catch (error) {
-      setError("An unexpected error occurred. Please try again.")
-      console.error(error)
+    } catch (err) {
+      setError('An error occurred. Please try again later.')
+      console.error('Login error:', err)
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <AuthLayout>
-      <Card className="w-full max-w-md border-primary-teal/20 shadow-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {statusMessage && (
-            <Alert className="mb-4 border-primary-teal bg-primary-teal/10">
-              <AlertDescription>{statusMessage}</AlertDescription>
-            </Alert>
-          )}
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+    <div className={styles.wrapper}>
+      <div className={styles.container}>
+        <div className={styles.formContainer}>
+          <h2>Login</h2>
+          <form className={styles.signupForm} onSubmit={handleSubmit}>
+            <div className={styles.inputField}>
+              <input 
+                type="email" 
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required 
+                disabled={isLoading}
               />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
-                      <Link href="/auth/forgot-password" className="text-sm text-primary-teal hover:underline">
-                        Forgot password?
-                      </Link>
+              <i className="fas fa-envelope"></i>
                     </div>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className={styles.inputField}>
+              <input 
+                type="password" 
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required 
+                disabled={isLoading}
               />
-
-              <Button
+              <i className="fas fa-lock"></i>
+            </div>
+            {error && <div className={styles.invalidFeedback}>{error}</div>}
+            <div className={styles.rememberMe}>
+              <label className={styles.customCheckbox}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  disabled={isLoading}
+                />
+                <span className={styles.checkmark}></span>
+                Remember Me
+              </label>
+            </div>
+            <div className={styles.submitContainer}>
+              <button 
                 type="submit"
-                className="w-full bg-primary-teal hover:bg-primary-teal/90"
-                disabled={isLoading || !apiAvailable}
+                className={styles.signupButton}
+                disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : !apiAvailable ? (
-                  "Authentication Server Unavailable"
-                ) : (
-                  "Login"
-                )}
-              </Button>
+                {isLoading ? 'Logging in...' : 'Login'}
+              </button>
+            </div>
             </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/auth/register" className="text-primary-teal hover:underline">
-              Sign up
+
+          <Link href="/auth/forgot-password" className={styles.forgotPassword}>
+            Forgot Your Password?
+          </Link>
+
+          <div className={styles.socialSignup}>
+            <p>Or Sign in with social platforms</p>
+            <div className={styles.socialIcons}>
+              <div className={styles.parent}>
+                <div className={`${styles.child} ${styles.child1}`}>
+                  <button className={styles.button}>
+                    <i className="fab fa-facebook-f" style={{ color: '#1877f2' }}></i>
+                  </button>
+                </div>
+                <div className={`${styles.child} ${styles.child2}`}>
+                  <button className={styles.button}>
+                    <i className="fab fa-google" style={{ color: '#ea4335' }}></i>
+                  </button>
+                </div>
+                <div className={`${styles.child} ${styles.child3}`}>
+                  <button className={styles.button}>
+                    <i className="fab fa-twitter" style={{ color: '#1da1f2' }}></i>
+                  </button>
+                </div>
+                <div className={`${styles.child} ${styles.child4}`}>
+                  <button className={styles.button}>
+                    <i className="fab fa-linkedin-in" style={{ color: '#0077b5' }}></i>
+                  </button>
+                </div>
+                <div className={`${styles.child} ${styles.child5}`}>
+                  <button className={styles.button}>
+                    <i className="fab fa-instagram" style={{ color: '#e1306c' }}></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.curveDivider}></div>
+
+        <div className={styles.infoContainer}>
+          <div className={styles.infoContent}>
+            <h3>New Here?</h3>
+            <p>
+              Sign up and discover a great amount of new opportunities!
+            </p>
+            <Link href="/auth/register" className={styles.signinLink}>
+              Sign Up
             </Link>
           </div>
-        </CardFooter>
-      </Card>
-    </AuthLayout>
+          <div className={styles.illustration}>
+            <Image
+              src="/images/login.svg"
+              alt="Login illustration"
+              width={300}
+              height={300}
+              priority
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

@@ -29,12 +29,12 @@
 
 .infoContainer {
     flex: 1;
-    background: linear-gradient(135deg, #40e0d0, #4be1b0);
+    background: linear-gradient(135deg, #10bc69, #10bc69);
     color: white;
     padding: 40px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-between; 
     position: relative;
     z-index: 1;
 }
@@ -55,7 +55,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    background: linear-gradient(135deg, #40e0d0, #4be1b0);
+    background: linear-gradient(135deg, #10bc69, #10bc69);
     border-radius: 50% 0 0 50% / 50% 0 0 50%;
     transform: translateX(-30%);
 }
@@ -74,7 +74,7 @@
     left: 0;
     width: 50px;
     height: 3px;
-    background: linear-gradient(135deg, #40e0d0, #4be1b0);
+    background: linear-gradient(135deg, #10bc69, #10bc69);
 }
 
 .infoContainer h3 {
@@ -133,7 +133,7 @@
 }
 
 .inputField input:focus + i {
-    color: #40e0d0;
+    color: #10bc69;
 }
 
 .submitContainer {
@@ -285,7 +285,7 @@
 
 .signinLink:hover {
     background-color: white;
-    color: #40e0d0;
+    color: #10bc69;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }

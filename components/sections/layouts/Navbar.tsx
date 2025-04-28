@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Moon, Sun } from "lucide-react"
+import { Moon, Sun, Menu, X } from "lucide-react"
 import { useTheme } from "next-themes"
 import Image from "next/image"
 import Link from "next/link"
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { theme, setTheme } = useTheme()
   const router = useRouter()
 
@@ -24,15 +25,14 @@ export function Navbar() {
         block: "start",
       })
     }
+    setIsMenuOpen(false) // Close menu after clicking a link
   }
 
   const handleLogoClick = () => {
-    // First try to scroll to home section if on main page
     const homeSection = document.getElementById("home")
     if (homeSection) {
       scrollToSection("home")
     } else {
-      // If not on main page, navigate to home page
       router.push("/")
     }
   }
@@ -53,7 +53,21 @@ export function Navbar() {
             />
           </div>
 
-          {/* Navigation Links */}
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-md text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69]"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
+
+          {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             <button
               onClick={() => scrollToSection("home")}
@@ -82,7 +96,7 @@ export function Navbar() {
           </div>
 
           {/* Right Side - Theme Toggle & Auth Buttons */}
-          <div className="flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4">
             <button
               className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -111,6 +125,66 @@ export function Navbar() {
             </Link>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              <button
+                onClick={() => scrollToSection("home")}
+                className="block w-full text-left px-3 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => scrollToSection("features")}
+                className="block w-full text-left px-3 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+              >
+                Features
+              </button>
+              <button
+                onClick={() => scrollToSection("about")}
+                className="block w-full text-left px-3 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+              >
+                About Us
+              </button>
+              <button
+                onClick={() => scrollToSection("contact")}
+                className="block w-full text-left px-3 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+              >
+                Contact
+              </button>
+              <div className="flex items-center space-x-4 px-3 py-2">
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                >
+                  {mounted && (
+                    <>
+                      {theme === "dark" ? (
+                        <Sun className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                      ) : (
+                        <Moon className="h-6 w-6 text-gray-600" />
+                      )}
+                    </>
+                  )}
+                </button>
+                <Link
+                  href="/auth/login"
+                  className="px-4 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="px-4 py-2 bg-[#10bc69] text-white rounded-lg hover:bg-[#10bc69]/90 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )

@@ -1,4 +1,4 @@
-import { Home, Building2, Users, Settings, LogOut } from "lucide-react"
+import { Home, Building2, Users, Settings, LogOut, Shield } from "lucide-react"
 
 import type { NavConfig, NavItemType } from "@/types/navigation"
 import type { UserRole } from "@/types/user"
@@ -19,13 +19,15 @@ const navIcons = {
   building: "building",
   users: "users",
   settings: "settings",
-  logout: "logout"
+  logout: "logout",
+  roles: "roles"
 }
 
 const navConfig: NavigationConfig = {
   business_owner: [
     { title: "Dashboard", href: "/dashboard", icon: navIcons.home },
     { title: "Branches", href: "/branches", icon: navIcons.building },
+    { title: "Role Management", href: "/roles", icon: navIcons.roles },
     { title: "Staff", href: "/staff", icon: navIcons.users },
     {
       title: "Queue Management",
@@ -87,6 +89,7 @@ export const getIconComponent = (iconName: string) => {
     users: Users,
     settings: Settings,
     logout: LogOut,
+    roles: Shield,
   }
   return iconMap[iconName as keyof typeof iconMap] || Home
 }

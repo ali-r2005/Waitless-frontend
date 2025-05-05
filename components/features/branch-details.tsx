@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import { Building2, Calendar, Clock, MapPin, Share2, Store } from "lucide-react"
+import { Building2, Calendar, Clock, MapPin, Share2, Store, X } from "lucide-react"
 
 import {
   Dialog,
@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { branchService } from "@/lib/branch-service"
 import type { Branch } from "@/types/branch"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface BranchDetailsProps {
   branchId: number
@@ -81,11 +82,11 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
           className="flex items-center gap-2 text-sm"
           style={{ marginLeft: `${level * 20}px` }}
         >
-          <Share2 className="h-4 w-4 text-muted-foreground" />
-          <span className={level === 0 ? "font-medium" : ""}>
+          <Share2 className="h-4 w-4 text-[#10bc69]" />
+          <span className={`${level === 0 ? "font-medium text-white" : "text-gray-300"}`}>
             {branch.name}
           </span>
-          <span className="text-muted-foreground text-xs">
+          <span className="text-gray-400 text-xs">
             ({branch.address})
           </span>
         </div>
@@ -96,92 +97,101 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] bg-background">
-        <DialogHeader>
-          <DialogTitle>Branch Details</DialogTitle>
-          <DialogDescription>
-            Detailed information about the branch and its hierarchy
-          </DialogDescription>
-        </DialogHeader>
+      <AnimatePresence>
+        {isOpen && (
+          <DialogContent className="sm:max-w-[500px] bg-[#1A1E2E] border-none shadow-2xl rounded-2xl p-0 overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="relative"
+            >
+              <button 
+                onClick={onClose}
+                className="absolute right-4 top-4 text-gray-400 hover:text-white z-20"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              
+              <div className="p-6">
+                <DialogHeader className="pb-2">
+                  <DialogTitle className="text-2xl font-bold text-[#10bc69]">
+                    Branch Details
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Detailed information about this branch
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-teal"></div>
-          </div>
-        ) : error ? (
-          <div className="text-red-500 text-center py-4">{error}</div>
-        ) : branch ? (
-          <div className="space-y-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Basic Information</h3>
-              <div className="grid gap-4">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium min-w-[100px]">Name:</span>
-                  <span className="text-primary">{branch.name || 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium min-w-[100px]">Address:</span>
-                  <span className="text-primary">{branch.address || 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Store className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium min-w-[100px]">Business ID:</span>
-                  <span className="text-primary">{branch.business_id || 'N/A'}</span>
-                </div>
-                {branch.parent_id !== null && (
-                  <div className="flex items-center gap-2">
-                    <Share2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium min-w-[100px]">Parent Branch:</span>
-                    <span className="text-primary">{branch.parent_id}</span>
+              <div className="p-6">
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#10bc69]"></div>
                   </div>
-                )}
-              </div>
-            </div>
+                ) : error ? (
+                  <div className="text-red-400 text-center py-4 bg-red-900/20 rounded-lg">{error}</div>
+                ) : branch ? (
+                  <div className="space-y-6">
+                    {/* Basic Information */}
+                    <div className="space-y-4">
+                      <div className="grid gap-5">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-5 w-5 text-[#10bc69]" />
+                            <span className="text-[#10bc69] font-medium">Branch Name</span>
+                          </div>
+                          <div className="bg-[#1e2338] p-3 rounded-lg text-white">
+                            {branch.name || 'N/A'}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-5 w-5 text-[#10bc69]" />
+                            <span className="text-[#10bc69] font-medium">Address</span>
+                          </div>
+                          <div className="bg-[#1e2338] p-3 rounded-lg text-white">
+                            {branch.address || 'N/A'}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-5 w-5 text-[#10bc69]" />
+                            <span className="text-[#10bc69] font-medium">Parent Branch</span>
+                          </div>
+                          <div className="bg-[#1e2338] p-3 rounded-lg text-white">
+                            {branch.parent?.name || (branch.parent_id ? `ID: ${branch.parent_id}` : 'No Parent Branch')}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-            <Separator />
-
-            {/* Timestamps */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Timestamps</h3>
-              <div className="grid gap-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium min-w-[100px]">Created:</span>
-                  <span className="text-primary">{formatDate(branch.created_at)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium min-w-[100px]">Last Updated:</span>
-                  <span className="text-primary">{formatDate(branch.updated_at)}</span>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Branch Hierarchy */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Branch Hierarchy</h3>
-              <ScrollArea className="h-[200px] rounded-md border p-4">
-                {hierarchy ? (
-                  renderHierarchy(hierarchy)
+                    {/* Branch Hierarchy (if available) */}
+                    {hierarchy && (
+                      <div className="space-y-3 mt-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Share2 className="h-5 w-5 text-[#10bc69]" />
+                          <span className="text-[#10bc69] font-medium">Branch Hierarchy</span>
+                        </div>
+                        <ScrollArea className="h-[150px] rounded-lg bg-[#1e2338] p-4">
+                          {renderHierarchy(hierarchy)}
+                        </ScrollArea>
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  <div className="text-muted-foreground text-sm">
-                    No hierarchy information available
+                  <div className="text-gray-400 text-center py-4">
+                    No branch information found
                   </div>
                 )}
-              </ScrollArea>
-            </div>
-          </div>
-        ) : (
-          <div className="text-muted-foreground text-center py-4">
-            No branch information found
-          </div>
+              </div>
+            </motion.div>
+          </DialogContent>
         )}
-      </DialogContent>
+      </AnimatePresence>
     </Dialog>
   )
 } 

@@ -19,6 +19,7 @@ export const API_ENDPOINTS = {
     QUEUES: "/api/queues",
     BRANCHES: "/api/branches",
     STAFF: "/api/staff",
+    ROLES: "/api/roles",
   }
 }
 

@@ -4,6 +4,8 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { MapPin, Building2, Loader2, Plus } from "lucide-react"
+import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,7 +24,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import type { Branch } from "@/types/branch"
+
+const formItemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.3,
+    }
+  })
+};
 
 const branchFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -70,80 +85,133 @@ export function BranchForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
         {error && (
-          <div className="text-red-500 text-sm mb-4">{error}</div>
+          <Alert variant="destructive" className="mb-4 animate-in slide-in-from-top">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Branch Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter branch name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Address</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter branch address" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="parent_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Parent Branch</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  const numValue = value === "null" ? null : Number(value)
-                  field.onChange(numValue)
-                }}
-                value={field.value?.toString() || "null"}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a parent branch (optional)" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="null">No Parent Branch</SelectItem>
-                  {branches
-                    .filter((branch) => branch.id !== initialData?.id)
-                    .map((branch) => (
-                      <SelectItem key={branch.id} value={branch.id.toString()}>
-                        {branch.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button
-          type="submit"
-          className="w-full bg-primary-teal hover:bg-primary-teal/90"
-          disabled={isLoading}
+        <motion.div
+          custom={0}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
         >
-          {isLoading ? "Saving..." : initialData ? "Update Branch" : "Create Branch"}
-        </Button>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem className="overflow-hidden">
+                <FormLabel className="text-[#10bc69] font-medium flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Branch Name
+                </FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter branch name" 
+                    {...field}
+                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 h-12 rounded-lg focus-visible:ring-[#10bc69] focus-visible:border-[#10bc69]"
+                  />
+                </FormControl>
+                <FormMessage className="text-red-400" />
+              </FormItem>
+            )}
+          />
+        </motion.div>
+
+        <motion.div
+          custom={1}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem className="overflow-hidden">
+                <FormLabel className="text-[#10bc69] font-medium flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  Address
+                </FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter branch address" 
+                    {...field}
+                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 h-12 rounded-lg focus-visible:ring-[#10bc69] focus-visible:border-[#10bc69]"
+                  />
+                </FormControl>
+                <FormMessage className="text-red-400" />
+              </FormItem>
+            )}
+          />
+        </motion.div>
+
+        <motion.div
+          custom={2}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <FormField
+            control={form.control}
+            name="parent_id"
+            render={({ field }) => (
+              <FormItem className="overflow-hidden">
+                <FormLabel className="text-[#10bc69] font-medium flex items-center gap-2">
+                  <Building2 className="h-4 w-4 opacity-70" />
+                  Parent Branch
+                </FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    const numValue = value === "null" ? null : Number(value)
+                    field.onChange(numValue)
+                  }}
+                  value={field.value?.toString() || "null"}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-12 rounded-lg focus:ring-[#10bc69]">
+                      <SelectValue placeholder="Select a parent branch (optional)" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectItem value="null" className="cursor-pointer focus:bg-gray-700 focus:text-white">No Parent Branch</SelectItem>
+                    {branches
+                      .filter((branch) => branch.id !== initialData?.id)
+                      .map((branch) => (
+                        <SelectItem key={branch.id} value={branch.id.toString()} className="cursor-pointer focus:bg-gray-700 focus:text-white">
+                          {branch.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage className="text-red-400" />
+              </FormItem>
+            )}
+          />
+        </motion.div>
+
+        <motion.div
+          custom={3}
+          variants={formItemVariants}
+          initial="hidden"
+          animate="visible"
+          className="pt-3"
+        >
+          <Button
+            type="submit"
+            className="w-full bg-[#10bc69] hover:bg-[#0ea55c] text-white flex justify-center items-center h-12 rounded-lg relative"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Saving...
+              </>
+            ) : initialData ? "Update Branch" : "Create Branch"}
+          </Button>
+        </motion.div>
       </form>
     </Form>
   )

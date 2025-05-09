@@ -111,3 +111,120 @@
 .cssbuttons-io-button:active .icon {
   transform: scale(0.95);
 }
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+/* SweetAlert Custom Styles */
+.swal2-popup {
+  border-radius: 20px !important;
+  padding: 2.5rem !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.swal2-title {
+  font-size: 1.75rem !important;
+  color: #212529 !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.swal2-html-container {
+  color: #495057 !important;
+  font-size: 1.1rem !important;
+  margin-top: 0.5rem !important;
+}
+
+.swal2-icon {
+  border-color: #ff4b4b !important;
+  color: #ff4b4b !important;
+  transform-origin: center !important;
+  transition: transform 0.3s ease !important;
+}
+
+.swal2-icon.swal2-warning:hover {
+  transform: rotate(5deg) !important;
+}
+
+.custom-confirm-btn {
+  padding: 14px 28px !important;
+  margin: 5px !important;
+  background: linear-gradient(135deg, #ff4b4b, #ff0000) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  box-shadow: 0 10px 15px -3px rgba(255, 0, 0, 0.3) !important;
+}
+
+.custom-confirm-btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 15px 20px -5px rgba(255, 0, 0, 0.4) !important;
+}
+
+.custom-cancel-btn {
+  padding: 14px 28px !important;
+  margin: 5px !important;
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border: 1px solid #e9ecef !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.custom-cancel-btn:hover {
+  background: #e9ecef !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.15) !important;
+}
+
+@keyframes modalReveal {
+  0% {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalHide {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.swal2-show {
+  animation: modalReveal 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+
+.swal2-hide {
+  animation: modalHide 0.4s ease-out forwards !important;
+}

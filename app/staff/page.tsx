@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, Users, Check } from "lucide-react"
 
 import { DashboardLayout } from "@/components/sections/layouts/dashboard-layout"
 import { Badge } from "@/components/ui/badge"
@@ -57,7 +57,8 @@ export default function StaffPage() {
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.branch.toLowerCase().includes(searchQuery.toLowerCase()),
+      member.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.role && member.role.description && member.role.description.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   const handleStaffAction = async (action: string, staffId: string) => {

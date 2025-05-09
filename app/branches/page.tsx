@@ -1,7 +1,8 @@
 "use client"
-import { Plus, Building2, Search, Loader2 } from "lucide-react"
+import { Plus, Building2, Search, Loader2, Eye, Pencil, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import Swal from "sweetalert2"
 
 import { DashboardLayout } from "@/components/sections/layouts/dashboard-layout"
 import { Button } from "@/components/ui/button"
@@ -159,23 +160,63 @@ export default function BranchesPage() {
   }
 
   const handleDeleteBranch = async (branchId: number) => {
-    if (!confirm("Are you sure you want to delete this branch?")) return
     try {
-      await branchService.deleteBranch(branchId)
-      await fetchBranches()
-      toast({
-        title: "Success",
-        description: "Branch deleted successfully",
-        className: "bg-[#10bc69] text-white",
-      })
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        html: 'This action will <b>permanently delete</b> this branch and cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete!',
+        cancelButtonText: 'Cancel',
+        customClass: {
+          confirmButton: 'custom-confirm-btn',
+          cancelButton: 'custom-cancel-btn',
+          popup: 'custom-modal'
+        },
+        buttonsStyling: false,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        },
+        backdrop: `
+          rgba(0,0,0,0.4)
+          url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ff4b4b' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")
+        `
+      });
+
+      if (result.isConfirmed) {
+        await branchService.deleteBranch(branchId);
+        await fetchBranches();
+        
+        // Show success message
+        await Swal.fire({
+          title: 'Deleted!',
+          html: 'The branch has been successfully deleted.',
+          icon: 'success',
+          customClass: {
+            confirmButton: 'custom-confirm-btn',
+            popup: 'custom-modal'
+          },
+          buttonsStyling: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
+      }
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to delete branch",
-        variant: "destructive",
-      })
+      Swal.fire({
+        title: 'Error!',
+        html: 'Failed to delete the branch. Please try again.',
+        icon: 'error',
+        customClass: {
+          confirmButton: 'custom-confirm-btn',
+          popup: 'custom-modal'
+        },
+        buttonsStyling: false
+      });
     }
-  }
+  };
 
   const handleBranchAction = async (action: string, branchId: number) => {
     switch (action) {

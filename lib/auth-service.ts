@@ -3,62 +3,83 @@ import { API_ENDPOINTS } from "./api-config"
 
 export const authService = {
   async login(email: string, password: string) {
-    const res = await api.post(API_ENDPOINTS.AUTH.LOGIN, { email, password })
-    const { access_token, user } = res.data
-
-    if (access_token) {
-      localStorage.setItem("auth_token", access_token)
-      document.cookie = `auth_token=${access_token}; path=/; SameSite=Strict;`
+    try {
+      const res = await api.post(API_ENDPOINTS.AUTH.LOGIN, { email, password })
+      const data = res.data as { access_token?: string; user?: any; message?: string }
+      const { access_token, user, message } = data
+      if (access_token) {
+        localStorage.setItem("auth_token", access_token)
+        api.defaults.headers.common["Authorization"] = `Bearer ${access_token}`
+      }
+      return { success: !!access_token, user, error: message }
+    } catch (error: any) {
+      return {
+        success: false,
+        user: null,
+        error: error.response?.data?.message || "Login failed. Please try again."
+      }
     }
-
-    return { success: true, user, error: res.data.message }
   },
 
   async register(data: any) {
-    const res = await api.post(API_ENDPOINTS.AUTH.REGISTER, data)
-    const { access_token, user } = res.data
-
-    if (access_token) {
-      localStorage.setItem("auth_token", access_token)
-      document.cookie = `auth_token=${access_token}; path=/; SameSite=Strict;`
+    try {
+      let payload: any = data
+      let config = {}
+      if (data.logo) {
+        payload = new FormData()
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) payload.append(key, value as any)
+        })
+        config = { headers: { 'Content-Type': 'multipart/form-data' } }
+      }
+      const res = await api.post(API_ENDPOINTS.AUTH.REGISTER, payload, config)
+      const dataRes = res.data as { access_token?: string; user?: any; message?: string }
+      const { access_token, user, message } = dataRes
+      if (access_token) {
+        localStorage.setItem("auth_token", access_token)
+        api.defaults.headers.common["Authorization"] = `Bearer ${access_token}`
+      }
+      return { success: !!access_token, user, error: message }
+    } catch (error: any) {
+      return {
+        success: false,
+        user: null,
+        error: error.response?.data?.message || "Registration failed. Please try again."
+      }
     }
-
-    return { success: true, user, error: res.data.message }
   },
 
   async logout() {
     try {
-      // Call the backend logout endpoint
       const res = await api.post(API_ENDPOINTS.AUTH.LOGOUT)
       if (res.status === 200) {
         localStorage.removeItem("auth_token")
-        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;"
+        delete api.defaults.headers.common["Authorization"]
         return { success: true }
       } else {
-        return { success: false, error: res.data.message }
+        const data = res.data as { message?: string }
+        return { success: false, error: data.message }
       }
     } catch (error) {
-      console.error("Logout API call failed:", error)
       return { success: false, error: "Logout API call failed" }
     }
   },
-  // Inside authService
+
   async setToken(token: string) {
     localStorage.setItem("auth_token", token)
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`
   },
-
 
   async getCurrentUser() {
     try {
       const res = await api.get(API_ENDPOINTS.AUTH.USER)
       return res.data
-    } catch {
+    } catch (error: any) {
       return null
     }
   },
 }
 
-// Add missing functions
 export async function updateProfile(data: any) {
   try {
     const res = await api.post(API_ENDPOINTS.AUTH.UPDATE_PROFILE, data)

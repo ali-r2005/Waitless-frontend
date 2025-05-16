@@ -1,17 +1,28 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Moon, Sun, Menu, X } from "lucide-react"
+import { Moon, Sun, Menu, X, Bell } from "lucide-react"
 import { useTheme } from "next-themes"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+  const { user, isAuthenticated, logout } = useAuth()
 
   useEffect(() => {
     setMounted(true)
@@ -95,34 +106,66 @@ export function Navbar() {
             </button>
           </div>
 
-          {/* Right Side - Theme Toggle & Auth Buttons */}
+          {/* Right Side - Theme Toggle, Notification, and User Dropdown */}
           <div className="hidden md:flex items-center space-x-4">
             <button
               className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
             >
               {mounted && (
                 <>
                   {theme === "dark" ? (
-                    <Sun className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                    <Sun className="h-6 w-6 text-gray-300" />
                   ) : (
                     <Moon className="h-6 w-6 text-gray-600" />
                   )}
                 </>
               )}
             </button>
-            <Link
-              href="/auth/login"
-              className="px-4 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+            <button
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+              aria-label="Notifications"
             >
-              Log In
-            </Link>
-            <Link
-              href="/auth/register"
-              className="px-4 py-2 bg-[#10bc69] text-white rounded-lg hover:bg-[#10bc69]/90 transition-colors"
-            >
-              Sign Up
-            </Link>
+              <Bell className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+              {/* Notification dot (optional) */}
+              {/* <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full" /> */}
+            </button>
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="p-0">
+                    <Avatar>
+                      <AvatarImage src={user.avatar || "/placeholder-user.jpg"} alt={user.name || user.email} />
+                      <AvatarFallback>{user.name ? user.name.charAt(0) : "U"}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="px-2 py-1 text-sm font-semibold">{user.name || user.email}</div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="text-red-600">Log Out</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="px-4 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="px-4 py-2 bg-[#10bc69] text-white rounded-lg hover:bg-[#10bc69]/90 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -158,29 +201,59 @@ export function Navbar() {
                 <button
                   className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  aria-label="Toggle theme"
                 >
                   {mounted && (
                     <>
                       {theme === "dark" ? (
-                        <Sun className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                        <Sun className="h-6 w-6 text-gray-300" />
                       ) : (
                         <Moon className="h-6 w-6 text-gray-600" />
                       )}
                     </>
                   )}
                 </button>
-                <Link
-                  href="/auth/login"
-                  className="px-4 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                  aria-label="Notifications"
                 >
-                  Log In
-                </Link>
-                <Link
-                  href="/auth/register"
-                  className="px-4 py-2 bg-[#10bc69] text-white rounded-lg hover:bg-[#10bc69]/90 transition-colors"
-                >
-                  Sign Up
-                </Link>
+                  <Bell className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                </button>
+                {isAuthenticated && user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="p-0">
+                        <Avatar>
+                          <AvatarImage src={user.avatar || "/placeholder-user.jpg"} alt={user.name || user.email} />
+                          <AvatarFallback>{user.name ? user.name.charAt(0) : "U"}</AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <div className="px-2 py-1 text-sm font-semibold">{user.name || user.email}</div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={logout} className="text-red-600">Log Out</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/login"
+                      className="px-4 py-2 text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/auth/register"
+                      className="px-4 py-2 bg-[#10bc69] text-white rounded-lg hover:bg-[#10bc69]/90 transition-colors"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -188,4 +261,4 @@ export function Navbar() {
       </div>
     </nav>
   )
-} 
+}

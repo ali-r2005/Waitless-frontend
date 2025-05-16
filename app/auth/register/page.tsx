@@ -14,24 +14,31 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AuthLayout } from "@/components/sections/layouts/auth-layout"
-import { register } from "@/lib/auth-service"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth-context"
+import { useRedirectIfAuthenticated } from "@/hooks/use-redirect-if-authenticated"
 import type { RegisterFormValues } from "@/types/auth"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { login: setAuthUser } = useAuth()
+  const { register: registerUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [registerType, setRegisterType] = useState<'business_owner' | 'customer'>('business_owner')
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+  useRedirectIfAuthenticated()
+
+  const form = useForm<RegisterFormValues, RegisterFormValues>({
+    resolver: zodResolver(registerSchema) as any,
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
       password: "",
-      confirmPassword: "",
-      businessName: "",
+      password_confirmation: "",
+      role: undefined,
+      business_name: "",
+      industry: "",
+      logo: undefined,
     },
   })
 
@@ -40,23 +47,23 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      const result = await register(data)
-
-      if (!result.success) {
-        setError(result.error)
-        return
+      let payload: any = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
       }
-
-      // Set user in auth context
-      if (result.user) {
-        setAuthUser(result.user)
+      if (registerType === 'business_owner') {
+        payload.role = 'business_owner'
+        payload.business_name = data.business_name
+        payload.industry = data.industry
+        if (data.logo) payload.logo = data.logo
       }
-
-      router.push("/dashboard")
-      router.refresh()
-    } catch (error) {
-      setError("An unexpected error occurred. Please try again.")
-      console.error(error)
+      await registerUser(payload)
+      // Success: user is redirected by context
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -75,6 +82,23 @@ export default function RegisterPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
+          <div className="flex justify-center gap-4 mb-6">
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-full border transition font-semibold ${registerType === 'business_owner' ? 'bg-primary-teal text-white border-primary-teal' : 'bg-white text-primary-teal border-primary-teal'}`}
+              onClick={() => setRegisterType('business_owner')}
+            >
+              Register as Business Owner
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-full border transition font-semibold ${registerType === 'customer' ? 'bg-primary-teal text-white border-primary-teal' : 'bg-white text-primary-teal border-primary-teal'}`}
+              onClick={() => setRegisterType('customer')}
+            >
+              Register as Customer
+            </button>
+          </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -108,17 +132,61 @@ export default function RegisterPage() {
 
               <FormField
                 control={form.control}
-                name="businessName"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Name</FormLabel>
+                    <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Business Name" {...field} />
+                      <Input placeholder="Your Phone Number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {registerType === 'business_owner' && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="business_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your Business Name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="industry"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Industry</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Industry" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="logo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Logo (optional)</FormLabel>
+                        <FormControl>
+                          <Input type="file" accept="image/*" onChange={e => field.onChange(e.target.files?.[0])} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
 
               <FormField
                 control={form.control}
@@ -136,7 +204,7 @@ export default function RegisterPage() {
 
               <FormField
                 control={form.control}
-                name="confirmPassword"
+                name="password_confirmation"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>

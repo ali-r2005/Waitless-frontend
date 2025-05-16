@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
+  register: (data: any) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -35,9 +36,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      await authService.login(email, password)
-      await refreshUser()
-      router.push("/dashboard")
+      const result = await authService.login(email, password)
+      if (result.success) {
+        await refreshUser()
+        router.push("/dashboard")
+      } else {
+        throw new Error(result.error)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -55,12 +60,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const register = async (data: any) => {
+    setIsLoading(true)
+    try {
+      const result = await authService.register(data)
+      if (result.success) {
+        await refreshUser()
+        router.push("/dashboard")
+      } else {
+        throw new Error(result.error)
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     refreshUser().finally(() => setIsLoading(false))
   }, [])
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout, refreshUser, register }}>
       {children}
     </AuthContext.Provider>
   )

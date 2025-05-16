@@ -19,7 +19,6 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    
     <html lang="en" suppressHydrationWarning>
       <head>
         <link
@@ -28,9 +27,9 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <Navbar/>
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+            <Navbar />
             {children}
           </ThemeProvider>
         </AuthProvider>
@@ -40,4 +39,4 @@ export default function RootLayout({
 }
 
 import './globals.css'
-import { Navbar } from "@/components/sections/layouts/Navbar"
+import { Navbar } from "@/components/sections/layouts/Header"

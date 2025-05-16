@@ -1,6 +1,6 @@
 "use client"
 
-import { Navbar } from "@/components/sections/layouts/Navbar"
+import { Navbar } from "@/components/sections/layouts/Header"
 import { Phone, Mail, MapPin } from "lucide-react"
 
 export default function HomePage() {

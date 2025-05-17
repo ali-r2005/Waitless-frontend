@@ -17,11 +17,11 @@ import type { StaffMember } from "@/types/staff"
 
 interface StaffTableProps {
   staff: StaffMember[]
-  onAction?: (action: string, staffId: string) => void
+  onAction?: (action: string, staffId: number) => void
 }
 
 export function StaffTable({ staff, onAction }: StaffTableProps) {
-  const handleAction = (action: string, staffId: string) => {
+  const handleAction = (action: string, staffId: number) => {
     if (onAction) {
       onAction(action, staffId)
     }

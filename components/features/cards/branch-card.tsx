@@ -57,7 +57,6 @@ export function BranchCard({ branch, onAction }: BranchCardProps) {
       </CardContent>
       
       <CardFooter className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-col space-y-3 relative overflow-hidden">
-        <span className="text-xs text-gray-500 dark:text-gray-400 w-full">Branch ID: {branch.id}</span>
         
         {/* Action buttons that appear on hover - now in footer */}
         <div className={`flex justify-center w-full space-x-2 transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>

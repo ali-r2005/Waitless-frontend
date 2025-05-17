@@ -1,7 +1,8 @@
 "use client"
 
-import { Plus, Edit, Trash2, MoreHorizontal, Check, X, Users, Shield, AlertTriangle } from "lucide-react"
+import { Plus, Edit, Trash2, MoreHorizontal, Check, X, Users, Shield, AlertTriangle, ShieldAlert, Loader2, Search } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useAuthorization } from "@/hooks/use-authorization"
 import { DashboardLayout } from "@/components/sections/layouts/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/ui/page-header"
@@ -25,7 +26,6 @@ import { toast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import { roleService, type Role } from "@/lib/role-service"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, Loader2 } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -37,7 +37,7 @@ import Swal from "sweetalert2"
 // Role Form Component
 interface RoleFormProps {
   initialData?: Role;
-  onSubmit: (data: { name: string; business_id: number }) => Promise<void>;
+  onSubmit: (data: { name: string }) => Promise<void>;
   isLoading: boolean;
   businessId: number;
 }
@@ -57,8 +57,7 @@ function RoleForm({ initialData, onSubmit, isLoading, businessId }: RoleFormProp
 
     try {
     await onSubmit({ 
-      name, 
-      business_id: businessId 
+      name 
     });
     } catch (err: any) {
       setError(err.message || "Failed to save role");
@@ -186,10 +185,7 @@ function RoleCard({ role, onAction }: RoleCardProps) {
         <div className="space-y-2">
           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
             <Users className="h-4 w-4 mr-2 text-[#10bc69]" />
-            Role ID: {role.id}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
-            Business ID: {role.business_id}
+            {role.name}
           </div>
         </div>
       </CardContent>
@@ -292,6 +288,8 @@ const fadeInUp = {
 
 // Main Page Component
 export default function RolesPage() {
+  const { isAuthorized, isLoading: authLoading, user } = useAuthorization(['business_owner']);
+  
   const [roles, setRoles] = useState<Role[]>([]);
   const [filteredRoles, setFilteredRoles] = useState<Role[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -303,12 +301,9 @@ export default function RolesPage() {
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
   const router = useRouter();
   
-  // This should be fetched from user context or app state
-  const businessId = 1; // Example business ID, replace with actual value
-
   const fetchRoles = async () => {
     try {
-      const data = await roleService.getRoles(businessId);
+      const data = await roleService.getRoles();
       setRoles(data);
       setFilteredRoles(data);
     } catch (err: any) {
@@ -319,8 +314,10 @@ export default function RolesPage() {
   };
 
   useEffect(() => {
-    fetchRoles();
-  }, []);
+    if (!authLoading && isAuthorized) {
+      fetchRoles();
+    }
+  }, [authLoading, isAuthorized]);
 
   // Filter roles based on search query
   useEffect(() => {
@@ -337,7 +334,7 @@ export default function RolesPage() {
     }
   }, [searchQuery, roles]);
 
-  const handleCreateRole = async (data: { name: string; business_id: number }) => {
+  const handleCreateRole = async (data: { name: string }) => {
     setIsSubmitting(true);
     try {
       await roleService.createRole(data);
@@ -358,7 +355,7 @@ export default function RolesPage() {
     }
   };
 
-  const handleUpdateRole = async (data: { name: string; business_id: number }) => {
+  const handleUpdateRole = async (data: { name: string }) => {
     if (!selectedRole) return;
     setIsSubmitting(true);
     try {
@@ -464,6 +461,41 @@ export default function RolesPage() {
     setIsDialogOpen(true);
   };
 
+  // Show loading state while checking authorization
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col min-h-screen items-center justify-center">
+          <Loader2 className="h-10 w-10 text-[#10bc69] animate-spin mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">Checking authorization...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Show unauthorized message if user doesn't have the required role
+  if (!isAuthorized) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col min-h-screen items-center justify-center p-6 text-center">
+          <div className="bg-red-50 dark:bg-red-900/20 p-8 rounded-2xl max-w-md">
+            <ShieldAlert className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-2">Access Denied</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              You don't have permission to access this page. This page requires business owner privileges.
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/dashboard'}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -519,7 +551,7 @@ export default function RolesPage() {
               </Button>
                 <AnimatePresence>
                   {isDialogOpen && (
-                    <DialogContent className="sm:max-w-[500px] bg-gray-900 border-none shadow-2xl rounded-2xl overflow-hidden p-0">
+                    <DialogContent className="sm:max-w-[500px] bg-white dark:bg-gray-900 border-none shadow-2xl rounded-2xl overflow-hidden p-0">
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -529,7 +561,7 @@ export default function RolesPage() {
                       >
                         <button 
                           onClick={() => setIsDialogOpen(false)}
-                          className="absolute right-4 top-4 text-gray-400 hover:text-white z-20"
+                          className="absolute right-4 top-4 text-gray-400 hover:text-gray-900 dark:hover:text-white z-20"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -537,8 +569,8 @@ export default function RolesPage() {
                           </svg>
                         </button>
                         
-                        <div className="bg-gray-800/80 p-6 relative z-10">
-              <DialogHeader>
+                        <div className="bg-gray-100/80 dark:bg-gray-800/80 p-6 relative z-10">
+                          <DialogHeader>
                             <motion.div
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
@@ -554,27 +586,27 @@ export default function RolesPage() {
                               animate={{ opacity: 1 }}
                               transition={{ delay: 0.2, duration: 0.4 }}
                             >
-                              <DialogDescription className="text-gray-400">
-                  {selectedRole 
-                    ? "Update the role details below"
-                    : "Fill in the details below to create a new role"}
-                </DialogDescription>
+                              <DialogDescription className="text-gray-500 dark:text-gray-400">
+                                {selectedRole 
+                                  ? "Update the role details below"
+                                  : "Fill in the details below to create a new role"}
+                              </DialogDescription>
                             </motion.div>
-              </DialogHeader>
+                          </DialogHeader>
                         </div>
                         
-                        <div className="p-6 bg-gray-900 relative z-10">
+                        <div className="p-6 bg-white dark:bg-gray-900 relative z-10">
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3, duration: 0.4 }}
                           >
-              <RoleForm
-                initialData={selectedRole}
-                onSubmit={selectedRole ? handleUpdateRole : handleCreateRole}
-                isLoading={isSubmitting}
-                businessId={businessId}
-              />
+                            <RoleForm
+                              initialData={selectedRole}
+                              onSubmit={selectedRole ? handleUpdateRole : handleCreateRole}
+                              isLoading={isSubmitting}
+                              businessId={0}
+                            />
                           </motion.div>
                         </div>
                       </motion.div>

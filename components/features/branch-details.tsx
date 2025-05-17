@@ -79,16 +79,17 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
     return (
       <div key={branch.id} className="space-y-2">
         <div
-          className="flex items-center gap-2 text-sm"
+          className={`flex items-center gap-2 text-sm cursor-pointer ${level === 0 ? "font-medium text-[#10bc69]" : "text-gray-700 dark:text-gray-300"}`}
           style={{ marginLeft: `${level * 20}px` }}
+          onClick={() => {
+            if (level === 0) return; // prevent reloading for root
+            setBranch(branch)
+            setHierarchy(branch)
+          }}
         >
           <Share2 className="h-4 w-4 text-[#10bc69]" />
-          <span className={`${level === 0 ? "font-medium text-white" : "text-gray-300"}`}>
-            {branch.name}
-          </span>
-          <span className="text-gray-400 text-xs">
-            ({branch.address})
-          </span>
+          <span>{branch.name}</span>
+          <span className="text-gray-400 text-xs">({branch.address})</span>
         </div>
         {branch.children?.map((child) => renderHierarchy(child, level + 1))}
       </div>
@@ -99,7 +100,7 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
     <Dialog open={isOpen} onOpenChange={onClose}>
       <AnimatePresence>
         {isOpen && (
-          <DialogContent className="sm:max-w-[500px] bg-[#1A1E2E] border-none shadow-2xl rounded-2xl p-0 overflow-hidden">
+          <DialogContent className="sm:max-w-[500px] bg-white dark:bg-[#1A1E2E] border-none shadow-2xl rounded-2xl p-0 overflow-hidden">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -109,7 +110,7 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
             >
               <button 
                 onClick={onClose}
-                className="absolute right-4 top-4 text-gray-400 hover:text-white z-20"
+                className="absolute right-4 top-4 text-gray-400 hover:text-black dark:hover:text-white z-20"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -119,7 +120,7 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
                   <DialogTitle className="text-2xl font-bold text-[#10bc69]">
                     Branch Details
                   </DialogTitle>
-                  <DialogDescription className="text-gray-400">
+                  <DialogDescription className="text-gray-500 dark:text-gray-400">
                     Detailed information about this branch
                   </DialogDescription>
                 </DialogHeader>
@@ -131,7 +132,7 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#10bc69]"></div>
                   </div>
                 ) : error ? (
-                  <div className="text-red-400 text-center py-4 bg-red-900/20 rounded-lg">{error}</div>
+                  <div className="text-red-500 text-center py-4 bg-red-100 dark:bg-red-900/20 rounded-lg">{error}</div>
                 ) : branch ? (
                   <div className="space-y-6">
                     {/* Basic Information */}
@@ -142,7 +143,7 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
                             <Building2 className="h-5 w-5 text-[#10bc69]" />
                             <span className="text-[#10bc69] font-medium">Branch Name</span>
                           </div>
-                          <div className="bg-[#1e2338] p-3 rounded-lg text-white">
+                          <div className="bg-gray-100 dark:bg-[#1e2338] p-3 rounded-lg text-gray-900 dark:text-white">
                             {branch.name || 'N/A'}
                           </div>
                         </div>
@@ -152,7 +153,7 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
                             <MapPin className="h-5 w-5 text-[#10bc69]" />
                             <span className="text-[#10bc69] font-medium">Address</span>
                           </div>
-                          <div className="bg-[#1e2338] p-3 rounded-lg text-white">
+                          <div className="bg-gray-100 dark:bg-[#1e2338] p-3 rounded-lg text-gray-900 dark:text-white">
                             {branch.address || 'N/A'}
                           </div>
                         </div>
@@ -162,8 +163,8 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
                             <Building2 className="h-5 w-5 text-[#10bc69]" />
                             <span className="text-[#10bc69] font-medium">Parent Branch</span>
                           </div>
-                          <div className="bg-[#1e2338] p-3 rounded-lg text-white">
-                            {branch.parent?.name || (branch.parent_id ? `ID: ${branch.parent_id}` : 'No Parent Branch')}
+                          <div className="bg-gray-100 dark:bg-[#1e2338] p-3 rounded-lg text-gray-900 dark:text-white">
+                            {hierarchy && hierarchy.name !== branch.name ? hierarchy.name : 'No Parent Branch'}
                           </div>
                         </div>
                       </div>
@@ -176,14 +177,14 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
                           <Share2 className="h-5 w-5 text-[#10bc69]" />
                           <span className="text-[#10bc69] font-medium">Branch Hierarchy</span>
                         </div>
-                        <ScrollArea className="h-[150px] rounded-lg bg-[#1e2338] p-4">
+                        <ScrollArea className="h-[150px] rounded-lg bg-gray-100 dark:bg-[#1e2338] p-4">
                           {renderHierarchy(hierarchy)}
                         </ScrollArea>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="text-gray-400 text-center py-4">
+                  <div className="text-gray-500 dark:text-gray-400 text-center py-4">
                     No branch information found
                   </div>
                 )}
@@ -194,4 +195,4 @@ export function BranchDetails({ branchId, isOpen, onClose }: BranchDetailsProps)
       </AnimatePresence>
     </Dialog>
   )
-} 
+}

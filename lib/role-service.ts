@@ -16,20 +16,17 @@ export interface ApiResponse<T> {
 
 export interface CreateRoleData {
   name: string
-  business_id: number
 }
 
 export interface UpdateRoleData {
   name: string
-  business_id: number
 }
 
 export const roleService = {
-  // Get all roles with optional filter by business_id
-  async getRoles(business_id?: number): Promise<Role[]> {
+  // Get all roles for the authenticated user's business
+  async getRoles(): Promise<Role[]> {
     try {
-      const params = business_id ? { business_id } : {}
-      const response = await api.get<ApiResponse<Role[]> | Role[]>("/api/roles", { params })
+      const response = await api.get<ApiResponse<Role[]> | Role[]>("/api/roles")
       console.log('API Response for getRoles:', response.data)
       
       // Check if the response has a data property
@@ -49,21 +46,21 @@ export const roleService = {
           {
             id: 1,
             name: "Admin",
-            business_id: business_id || 1,
+            business_id: 1,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           },
           {
             id: 2,
             name: "Manager",
-            business_id: business_id || 1,
+            business_id: 1,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           },
           {
             id: 3,
             name: "Staff",
-            business_id: business_id || 1,
+            business_id: 1,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
@@ -81,21 +78,21 @@ export const roleService = {
           {
             id: 1,
             name: "Admin",
-            business_id: business_id || 1,
+            business_id: 1,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           },
           {
             id: 2,
             name: "Manager",
-            business_id: business_id || 1,
+            business_id: 1,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           },
           {
             id: 3,
             name: "Staff",
-            business_id: business_id || 1,
+            business_id: 1,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
@@ -155,7 +152,7 @@ export const roleService = {
         return {
           id: Math.floor(Math.random() * 1000) + 10,
           name: data.name,
-          business_id: data.business_id,
+          business_id: 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -184,7 +181,7 @@ export const roleService = {
         return {
           id: id,
           name: data.name,
-          business_id: data.business_id,
+          business_id: 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };

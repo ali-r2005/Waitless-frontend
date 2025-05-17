@@ -8,8 +8,8 @@ import type { StaffRequest } from "@/types/staff"
 
 interface StaffRequestsTableProps {
   requests: StaffRequest[]
-  onApprove: (requestId: string) => void
-  onReject: (requestId: string) => void
+  onApprove: (requestId: number) => void
+  onReject: (requestId: number) => void
 }
 
 export function StaffRequestsTable({ requests, onApprove, onReject }: StaffRequestsTableProps) {

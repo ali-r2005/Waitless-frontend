@@ -111,7 +111,7 @@ export function BranchForm({
                   <Input 
                     placeholder="Enter branch name" 
                     {...field}
-                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 h-12 rounded-lg focus-visible:ring-[#10bc69] focus-visible:border-[#10bc69]"
+                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 h-12 rounded-lg focus-visible:ring-[#10bc69] focus-visible:border-[#10bc69]"
                   />
                 </FormControl>
                 <FormMessage className="text-red-400" />
@@ -139,7 +139,7 @@ export function BranchForm({
                   <Input 
                     placeholder="Enter branch address" 
                     {...field}
-                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 h-12 rounded-lg focus-visible:ring-[#10bc69] focus-visible:border-[#10bc69]"
+                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 h-12 rounded-lg focus-visible:ring-[#10bc69] focus-visible:border-[#10bc69]"
                   />
                 </FormControl>
                 <FormMessage className="text-red-400" />
@@ -171,11 +171,11 @@ export function BranchForm({
                   value={field.value?.toString() || "null"}
                 >
                   <FormControl>
-                    <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white h-12 rounded-lg focus:ring-[#10bc69]">
+                    <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white h-12 rounded-lg focus:ring-[#10bc69]">
                       <SelectValue placeholder="Select a parent branch (optional)" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white">
                     <SelectItem value="null" className="cursor-pointer focus:bg-gray-700 focus:text-white">No Parent Branch</SelectItem>
                     {branches
                       .filter((branch) => branch.id !== initialData?.id)
@@ -215,4 +215,4 @@ export function BranchForm({
       </form>
     </Form>
   )
-} 
+}

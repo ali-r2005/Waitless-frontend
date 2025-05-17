@@ -1,11 +1,9 @@
 import api from "./axios"
-import { API_ENDPOINTS } from "./api-config"
 import type { Branch } from "@/types/branch"
 
 export interface CreateBranchData {
   name: string
   address: string
-  business_id: number
   parent_id?: number | null
 }
 
@@ -16,22 +14,16 @@ export interface UpdateBranchData {
 }
 
 export const branchService = {
-  // Get all branches with optional filters
-  async getBranches(params?: { business_id?: number; parent_id?: number }): Promise<Branch[]> {
+  // Get all branches for the authenticated business owner
+  async getBranches(): Promise<Branch[]> {
     try {
-      const response = await api.get("/api/branches", { params })
-      console.log('API Response for getBranches:', response.data)
-      
-      // Check if the response has a data property
-      if (response.data && response.data.data) {
-        return response.data.data
-      }
-      
-      // If response is an array, return it directly
+      const response = await api.get("/api/branches")
+      // Handle both array at root and array in data property
       if (Array.isArray(response.data)) {
         return response.data
+      } else if (Array.isArray((response.data as any)?.data)) {
+        return (response.data as any).data
       }
-
       return []
     } catch (error) {
       console.error("Error fetching branches:", error)
@@ -43,14 +35,7 @@ export const branchService = {
   async getBranchById(id: string | number): Promise<Branch> {
     try {
       const response = await api.get(`/api/branches/${id}`)
-      console.log('API Response for getBranchById:', response.data)
-      
-      // Check if the response has a data property
-      if (response.data && response.data.data) {
-        return response.data.data
-      }
-      
-      return response.data
+      return response.data as Branch
     } catch (error) {
       console.error(`Error fetching branch with id ${id}:`, error)
       throw error
@@ -61,13 +46,7 @@ export const branchService = {
   async createBranch(data: CreateBranchData): Promise<Branch> {
     try {
       const response = await api.post("/api/branches", data)
-      console.log('API Response for createBranch:', response.data)
-      
-      if (response.data && response.data.data) {
-        return response.data.data
-      }
-      
-      return response.data
+      return response.data as Branch
     } catch (error) {
       console.error("Error creating branch:", error)
       throw error
@@ -78,13 +57,7 @@ export const branchService = {
   async updateBranch(id: string | number, data: UpdateBranchData): Promise<Branch> {
     try {
       const response = await api.put(`/api/branches/${id}`, data)
-      console.log('API Response for updateBranch:', response.data)
-      
-      if (response.data && response.data.data) {
-        return response.data.data
-      }
-      
-      return response.data
+      return response.data as Branch
     } catch (error) {
       console.error(`Error updating branch with id ${id}:`, error)
       throw error
@@ -94,8 +67,7 @@ export const branchService = {
   // Delete a branch
   async deleteBranch(id: string | number): Promise<void> {
     try {
-      const response = await api.delete(`/api/branches/${id}`)
-      console.log('API Response for deleteBranch:', response.data)
+      await api.delete(`/api/branches/${id}`)
     } catch (error) {
       console.error(`Error deleting branch with id ${id}:`, error)
       throw error
@@ -106,16 +78,24 @@ export const branchService = {
   async getBranchHierarchy(id: string | number): Promise<Branch> {
     try {
       const response = await api.get(`/api/branches/${id}/hierarchy`)
-      console.log('API Response for getBranchHierarchy:', response.data)
-      
-      if (response.data && response.data.data) {
-        return response.data.data
-      }
-      
-      return response.data
+      return response.data as Branch
     } catch (error) {
       console.error(`Error fetching hierarchy for branch ${id}:`, error)
       throw error
     }
+  },
+
+  // Move sub-branches to another branch
+  async moveSubBranches(branchId: string | number, target_branch_id: number, branch_ids: number[]): Promise<{status: string, message: string}> {
+    try {
+      const response = await api.post(`/api/branches/${branchId}/move-sub-branches`, {
+        target_branch_id,
+        branch_ids
+      })
+      return response.data as {status: string, message: string}
+    } catch (error) {
+      console.error(`Error moving sub-branches for branch ${branchId}:`, error)
+      throw error
+    }
   }
-} 
+}

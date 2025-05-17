@@ -5,13 +5,14 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from 'next/image'
 import { useRedirectIfAuthenticated } from "@/hooks/use-redirect-if-authenticated"
+import { useAuth } from "@/lib/auth-context"
 
 export default function LoginPage() {
   const router = useRouter()
   useRedirectIfAuthenticated()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -20,22 +21,18 @@ export default function LoginPage() {
     setError('')
     setIsLoading(true)
     try {
-      // TODO: Replace with real API call to Laravel backend
-      // Example: await authService.login(email, password)
-      // Simulate login
-      setTimeout(() => {
-        setIsLoading(false)
-        router.push('/dashboard')
-      }, 1000)
-    } catch (err) {
-      setError('An error occurred. Please try again later.')
+      await login(email, password)
+      // Success: user is redirected by context
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password. Please try again.')
+    } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4">
-      <div className="flex w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden relative min-h-[600px]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br py-8 px-4">
+      <div className="flex w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden relative min-h-[600px] border border-[#10bc69]/10">
         {/* Form Section */}
         <div className="flex-1 p-10 z-10 flex flex-col justify-center">
           <h2 className="text-3xl font-bold mb-8 text-gray-800 relative after:content-[''] after:block after:w-12 after:h-1 after:bg-gradient-to-r after:from-[#10bc69] after:to-[#10bc69] after:mt-2 after:rounded-full">Login</h2>
@@ -48,7 +45,7 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full py-3 pl-12 pr-4 rounded-full bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10bc69] text-base text-gray-900 placeholder-gray-500 transition"
+                className="w-full py-3 pl-12 pr-4 rounded-full bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10bc69] text-base text-gray-900 placeholder-gray-500 transition shadow-sm"
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" stroke="none"/><path d="M22 6l-10 7L2 6" /></svg>
@@ -62,30 +59,13 @@ export default function LoginPage() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full py-3 pl-12 pr-4 rounded-full bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10bc69] text-base text-gray-900 placeholder-gray-500 transition"
+                className="w-full py-3 pl-12 pr-4 rounded-full bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10bc69] text-base text-gray-900 placeholder-gray-500 transition shadow-sm"
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
               </span>
             </div>
-            {error && <div className="text-red-600 text-sm mt-1">{error}</div>}
-            <div className="flex items-center mb-4">
-              <label className="flex items-center cursor-pointer text-gray-700 text-base select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={e => setRememberMe(e.target.checked)}
-                  disabled={isLoading}
-                  className="hidden"
-                />
-                <span className="w-4 h-4 mr-2 border-2 border-gray-400 rounded flex items-center justify-center transition-colors bg-white">
-                  {rememberMe && (
-                    <svg className="w-3 h-3 text-[#10bc69]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
-                  )}
-                </span>
-                Remember Me
-              </label>
-            </div>
+            {error && <div className="text-red-600 text-sm mt-1 font-medium">{error}</div>}
             <div className="mb-4">
               <button
                 type="submit"

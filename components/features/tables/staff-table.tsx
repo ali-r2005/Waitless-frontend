@@ -18,9 +18,10 @@ import type { StaffMember } from "@/types/staff"
 interface StaffTableProps {
   staff: StaffMember[]
   onAction?: (action: string, staffId: number) => void
+  isBranchManagersView?: boolean
 }
 
-export function StaffTable({ staff, onAction }: StaffTableProps) {
+export function StaffTable({ staff, onAction, isBranchManagersView = false }: StaffTableProps) {
   const handleAction = (action: string, staffId: number) => {
     if (onAction) {
       onAction(action, staffId)
@@ -80,19 +81,27 @@ export function StaffTable({ staff, onAction }: StaffTableProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleAction("edit", member.id)}>Edit Details</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleAction("changeRole", member.id)}>
-                        Change Role
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleAction("changeBranch", member.id)}>
-                        Change Branch
-                      </DropdownMenuItem>
+                      
+                      {/* Only show promote option for regular staff (not branch managers) */}
+                      {!isBranchManagersView && (
+                        <DropdownMenuItem onClick={() => handleAction("promote", member.id)}>
+                          Promote to Branch Manager
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {/* Show remove branch manager role option only for branch managers */}
+                      {isBranchManagersView && (
+                        <DropdownMenuItem onClick={() => handleAction("removeBranchManagerRole", member.id)}>
+                          Remove Branch Manager Role
+                        </DropdownMenuItem>
+                      )}
+                      
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive"
-                        onClick={() => handleAction("deactivate", member.id)}
+                        onClick={() => handleAction("remove", member.id)}
                       >
-                        Deactivate Account
+                        Remove from Staff
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

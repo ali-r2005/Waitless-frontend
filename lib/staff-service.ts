@@ -1,5 +1,4 @@
 import type { StaffMember, StaffUser } from '@/types/staff'
-import type { Role } from '@/types/role'
 import api from './axios'
 
 interface ApiResponse<T> {
@@ -10,28 +9,61 @@ interface ApiResponse<T> {
 
 class StaffService {
 
-  // Search for users to add as staff
-  async searchUsers(query: string): Promise<StaffUser[]> {
+  // Search for existing staff members
+  async searchStaff(query: string): Promise<StaffMember[]> {
     try {
+      // First get all staff members
+      const allStaff = await this.getStaffMembers();
+      
+      // Then filter them client-side based on the query
+      if (!query.trim()) return allStaff;
+      
+      const lowerQuery = query.toLowerCase();
+      return allStaff.filter(member => 
+        (member.name && member.name.toLowerCase().includes(lowerQuery)) ||
+        (member.email && member.email.toLowerCase().includes(lowerQuery))
+      );
+    } catch (error) {
+      console.error('Error searching staff members:', error);
+      throw error;
+    }
+  }
+  
+  // Search for users (customers) to add as staff
+  async searchUsersToAddAsStaff(query: string): Promise<StaffUser[]> {
+    try {
+      if (!query.trim()) return [];
+      
       const response = await api.get<ApiResponse<StaffUser[]>>(`/api/users/search?name=${encodeURIComponent(query)}`);
-      console.log('Search users response:', response.data);
+      console.log('Search users to add as staff response:', response.data);
       return response.data.data || [];
     } catch (error) {
-      console.error('Error searching users:', error);
+      console.error('Error searching users to add as staff:', error);
       throw error;
     }
   }
 
   async addUserToStaff(userId: number, roleId: number, branchId: number): Promise<any> {
     try {
-      const response = await api.post<ApiResponse<any>>(`/api/users/${userId}/add-to-staff`, {
-        role_id: roleId,
-        branch_id: branchId
-      });
+      // Log the request data for debugging
+      console.log('Adding user to staff with data:', { userId, roleId, branchId });
+      
+      // Make sure we're sending integers, not strings
+      const payload = {
+        role_id: Number(roleId),
+        branch_id: Number(branchId)
+      };
+      
+      const response = await api.post<ApiResponse<any>>(`/api/users/${userId}/add-to-staff`, payload);
       console.log('Add user to staff response:', response.data);
       return response.data.data;
-    } catch (error) {
+    } catch (error: any) {
+      // Enhanced error logging
       console.error('Error adding user to staff:', error);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+      }
       throw error;
     }
   }
@@ -46,60 +78,8 @@ class StaffService {
     }
   }
 
-  // Role management functions
-  async getRoles(): Promise<Role[]> {
-    try {
-      const response = await api.get<ApiResponse<Role[]>>(`/api/roles`);
-      console.log('Get roles response:', response.data);
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Error fetching roles:', error);
-      throw error;
-    }
-  }
-
-  async getRole(roleId: string): Promise<Role> {
-    try {
-      const response = await api.get<ApiResponse<Role>>(`/api/roles/${roleId}`);
-      console.log('Get role response:', response.data);
-      return response.data.data as Role;
-    } catch (error) {
-      console.error('Error fetching role:', error);
-      throw error;
-    }
-  }
-
-  async createRole(roleData: Partial<Role>): Promise<Role> {
-    try {
-      const response = await api.post<ApiResponse<Role>>(`/api/roles`, roleData);
-      console.log('Create role response:', response.data);
-      return response.data.data as Role;
-    } catch (error) {
-      console.error('Error creating role:', error);
-      throw error;
-    }
-  }
-
-  async updateRole(roleId: string, roleData: Partial<Role>): Promise<Role> {
-    try {
-      const response = await api.put<ApiResponse<Role>>(`/api/roles/${roleId}`, roleData);
-      console.log('Update role response:', response.data);
-      return response.data.data as Role;
-    } catch (error) {
-      console.error('Error updating role:', error);
-      throw error;
-    }
-  }
-
-  async deleteRole(roleId: string): Promise<void> {
-    try {
-      const response = await api.delete<ApiResponse<void>>(`/api/roles/${roleId}`);
-      console.log('Delete role response:', response.data);
-    } catch (error) {
-      console.error('Error deleting role:', error);
-      throw error;
-    }
-  }
+  // Note: Role management functions have been moved to role-service.ts
+  // Branch management functions have been moved to branch-service.ts
 
   // Get all staff members
   async getStaffMembers(): Promise<StaffMember[]> {

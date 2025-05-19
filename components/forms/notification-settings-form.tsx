@@ -57,7 +57,7 @@ export function NotificationSettingsForm({ defaultValues, onSubmit }: Notificati
   return (
     <>
       {success && (
-        <Alert className="mb-4 border-primary-teal bg-primary-teal/10">
+        <Alert className="mb-4 border-waitless-green bg-waitless-green/10">
           <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
@@ -195,7 +195,7 @@ export function NotificationSettingsForm({ defaultValues, onSubmit }: Notificati
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit" className="bg-primary-teal hover:bg-primary-teal/90" disabled={isLoading}>
+            <Button type="submit" className="bg-waitless-green hover:bg-waitless-green/90" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

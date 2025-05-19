@@ -129,6 +129,31 @@
   animation: gradient 8s ease infinite;
 }
 
+/* Waitless Green Color Utilities */
+.text-waitless-green {
+  color: #10bc69;
+}
+
+.bg-waitless-green {
+  background-color: #10bc69;
+}
+
+.border-waitless-green {
+  border-color: #10bc69;
+}
+
+.hover\:text-waitless-green:hover {
+  color: #10bc69;
+}
+
+.hover\:bg-waitless-green:hover {
+  background-color: #10bc69;
+}
+
+.hover\:border-waitless-green:hover {
+  border-color: #10bc69;
+}
+
 /* SweetAlert Custom Styles */
 .swal2-popup {
   border-radius: 20px !important;

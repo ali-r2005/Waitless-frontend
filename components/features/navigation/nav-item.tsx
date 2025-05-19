@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { getIconComponent } from "@/lib/navigation"
 import type { NavItemType } from "@/types/navigation"
 
 interface NavItemProps {
@@ -8,6 +9,8 @@ interface NavItemProps {
 }
 
 export function NavItem({ item, isActive }: NavItemProps) {
+  const IconComponent = getIconComponent(item.icon)
+  
   return (
     <Link
       href={item.href}
@@ -16,7 +19,7 @@ export function NavItem({ item, isActive }: NavItemProps) {
         isActive ? "bg-accent text-accent-foreground" : "transparent",
       )}
     >
-      {item.icon}
+      <IconComponent className="h-4 w-4" />
       {item.title}
     </Link>
   )

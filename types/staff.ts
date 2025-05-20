@@ -15,10 +15,30 @@ export interface StaffMember {
     id: number
     role_id: number
     created_at: string
+    user?: {
+      id: number
+      name: string
+      email: string
+      phone: string
+      role: string
+      branch_id: number
+      business_id: number
+      created_at: string
+      updated_at: string
+    }
+    role?: {
+      id: number
+      business_id: number
+      name: string
+      created_at: string
+      updated_at: string
+    }
   }
   // Frontend display properties
   role?: string
-  branch?: string
+  branch: {
+    name : string
+  }
   status?: "active" | "inactive"
   avatar?: string
 }

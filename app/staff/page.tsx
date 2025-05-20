@@ -63,7 +63,7 @@ export default function StaffPage() {
       (member.name && member.name.toLowerCase().includes(staffSearchQuery.toLowerCase())) ||
       (member.email && member.email.toLowerCase().includes(staffSearchQuery.toLowerCase())) ||
       (member.role && member.role.toLowerCase().includes(staffSearchQuery.toLowerCase())) ||
-      (member.branch && member.branch.toLowerCase().includes(staffSearchQuery.toLowerCase()))
+      (member.branch.name && member.branch.name.toLowerCase().includes(staffSearchQuery.toLowerCase()))
     )
   )
 

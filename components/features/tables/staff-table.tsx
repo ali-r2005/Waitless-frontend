@@ -48,7 +48,7 @@ export function StaffTable({ staff, onAction, isBranchManagersView = false }: St
                   <div className="flex items-center gap-3">
                     <Avatar>
                       <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
-                      <AvatarFallback className="bg-primary-teal/10 text-primary-teal">
+                      <AvatarFallback className="bg-waitless-green/10 text-waitless-green">
                         {member.name
                           .split(" ")
                           .map((n) => n[0])
@@ -61,8 +61,8 @@ export function StaffTable({ staff, onAction, isBranchManagersView = false }: St
                     </div>
                   </div>
                 </td>
-                <td className="p-4">{member.role}</td>
-                <td className="p-4">{member.branch}</td>
+                <td className="p-4">{member.staff?.role?.name || member.role || "No role assigned"}</td>
+                <td className="p-4">{member.branch?.name || "No branch assigned"}</td>
                 <td className="p-4">
                   <Badge
                     variant="outline"

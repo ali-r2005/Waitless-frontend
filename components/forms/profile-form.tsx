@@ -13,9 +13,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import type { ProfileFormValues } from "@/types/user"
 
-const profileSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
+const profileSchema = z.object({  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
+  email: z.string().email({ message: "Veuillez saisir une adresse e-mail valide" }),
   phone: z.string().optional(),
   jobTitle: z.string().optional(),
 })

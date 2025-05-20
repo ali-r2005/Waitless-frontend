@@ -40,12 +40,12 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
 
         if (!data.valid) {
           setIsTokenValid(false)
-          setError("This password reset link is invalid or has expired. Please request a new one.")
+          setError("Ce lien de réinitialisation n'est plus valide ou a expiré. Veuillez en demander un nouveau.")
         }
       } catch (error) {
         console.error("Error validating token:", error)
         setIsTokenValid(false)
-        setError("An error occurred while validating your reset link. Please try again.")
+        setError("Une erreur s'est produite lors de la validation de votre lien. Veuillez réessayer.")
       }
     }
 
@@ -71,7 +71,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
 
       router.push("/auth/login?status=reset-success")
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.")
+      setError("Une erreur inattendue s'est produite. Veuillez réessayer.")
       console.error(error)
     } finally {
       setIsLoading(false)
@@ -82,8 +82,8 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
     <AuthLayout>
       <Card className="w-full max-w-md border-primary-teal/20 shadow-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
-          <CardDescription>Create a new password for your account</CardDescription>
+          <CardTitle className="text-2xl font-bold">Réinitialisation du mot de passe</CardTitle>
+          <CardDescription>Créez un nouveau mot de passe pour votre compte</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
@@ -100,7 +100,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New Password</FormLabel>
+                      <FormLabel>Nouveau mot de passe</FormLabel>
                       <FormControl>
                         <Input type="password" {...field} />
                       </FormControl>
@@ -114,7 +114,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm New Password</FormLabel>
+                      <FormLabel>Confirmer le nouveau mot de passe</FormLabel>
                       <FormControl>
                         <Input type="password" {...field} />
                       </FormControl>
@@ -127,30 +127,25 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Resetting password...
+                      Réinitialisation en cours...
                     </>
                   ) : (
-                    "Reset Password"
+                    "Réinitialiser le mot de passe"
                   )}
                 </Button>
               </form>
             </Form>
           ) : (
-            <div className="flex flex-col items-center justify-center py-4">
-              <Button variant="outline" className="mt-2" onClick={() => router.push("/auth/forgot-password")}>
-                Request New Reset Link
-              </Button>
+            <div className="text-center">
+              <Link
+                href="/auth/forgot-password"
+                className="text-primary-teal hover:text-primary-teal/90 hover:underline"
+              >
+                Demander un nouveau lien de réinitialisation
+              </Link>
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center text-sm">
-            Remember your password?{" "}
-            <Link href="/auth/login" className="text-primary-teal hover:underline">
-              Back to login
-            </Link>
-          </div>
-        </CardFooter>
       </Card>
     </AuthLayout>
   )

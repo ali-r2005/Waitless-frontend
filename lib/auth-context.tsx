@@ -8,7 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   user: any | null
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   register: (data: any) => Promise<void>
@@ -33,10 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     setIsLoading(true)
     try {
-      const result = await authService.login(email, password)
+      const result = await authService.login(email, password, rememberMe)
       if (result.success) {
         await refreshUser()
         router.push("/dashboard")

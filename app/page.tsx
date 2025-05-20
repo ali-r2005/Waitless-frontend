@@ -3,6 +3,10 @@
 import { Navbar } from "@/components/sections/layouts/Header"
 import { Phone, Mail, MapPin } from "lucide-react"
 import { Footer } from "@/components/ui/footer"
+import { motion } from "framer-motion"
+import Image from "next/image"
+
+
 
 export default function HomePage() {
   return (
@@ -44,13 +48,20 @@ export default function HomePage() {
           </div>
           {/* Hero Image */}
           <div className="lg:w-1/2 mt-12 lg:mt-0">
-            <div className="animate-float">
+            <motion.div
+              animate={{ y: [-20, 0, -20] }}
+              transition={{ 
+                repeat: Infinity, 
+                duration: 3,
+                ease: "easeInOut"
+              }}
+            >
               <img
-                src="/images/queue_bg.svg"
+                src="/images/Queue-amico.svg?v=2"
                 alt="Queue Management Illustration"
-                className="w-full h-auto max-w-2xl mx-auto"
+                className="w-full h-auto max-w-md mx-auto" 
               />
-            </div>
+            </motion.div>
           </div>
         </div>
 
@@ -130,10 +141,13 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col lg:flex-row items-center gap-12">
               <div className="lg:w-1/2">
-                <img
-                  src="/images/rabout.png"
+                <Image
+                  src="/images/Aboutus.svg"
                   alt="Queue Illustration"
+                  width={600}
+                  height={400}
                   className="w-full h-auto"
+                  priority
                 />
               </div>
               <div className="lg:w-1/2">

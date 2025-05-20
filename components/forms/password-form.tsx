@@ -15,12 +15,15 @@ import type { PasswordFormValues } from "@/types/user"
 
 const passwordSchema = z
   .object({
-    currentPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
-    newPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
-    confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+    currentPassword: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères" }),
+    newPassword: z.string()
+      .min(8, { message: "Le mot de passe doit contenir au moins 8 caractères" })
+      .regex(/[A-Z]/, { message: "Le mot de passe doit contenir au moins une lettre majuscule" })
+      .regex(/[0-9]/, { message: "Le mot de passe doit contenir au moins un chiffre" }),
+    confirmPassword: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères" }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "Les mots de passe ne correspondent pas",
     path: ["confirmPassword"],
   })
 
@@ -54,10 +57,10 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
       
       try {
         await onSubmit(data)
-        setSuccess("Password updated successfully")
+        setSuccess("Mot de passe mis à jour avec succès")
         form.reset()
       } catch (error) {
-        setError("An unexpected error occurred. Please try again.")
+        setError("Une erreur inattendue s'est produite. Veuillez réessayer.")
         console.error(error)
       }
     } else {
@@ -68,10 +71,10 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
 
       try {
         await onSubmit(data)
-        setSuccess("Password updated successfully")
+        setSuccess("Mot de passe mis à jour avec succès")
         form.reset()
       } catch (error) {
-        setError("An unexpected error occurred. Please try again.")
+        setError("Une erreur inattendue s'est produite. Veuillez réessayer.")
         console.error(error)
       } finally {
         setInternalLoading(false)
@@ -82,8 +85,8 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Change Password</CardTitle>
-        <CardDescription>Update your password to keep your account secure</CardDescription>
+        <CardTitle>Changer le mot de passe</CardTitle>
+        <CardDescription>Mettez à jour votre mot de passe pour sécuriser votre compte</CardDescription>
       </CardHeader>
       <CardContent>
         {success && (
@@ -105,7 +108,7 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
               name="currentPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Current Password</FormLabel>
+                  <FormLabel>Mot de passe actuel</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -120,11 +123,13 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel>Nouveau mot de passe</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
-                    <FormDescription>Password must be at least 8 characters long</FormDescription>
+                    <FormDescription>
+                      Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -135,7 +140,7 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormLabel>Confirmer le nouveau mot de passe</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
@@ -150,10 +155,10 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
+                    Mise à jour en cours...
                   </>
                 ) : (
-                  "Update Password"
+                  "Mettre à jour le mot de passe"
                 )}
               </Button>
             </div>

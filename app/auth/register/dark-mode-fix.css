@@ -1,0 +1,68 @@
+/* Dark mode fixes for register page */
+:root {
+  --dark-bg-color: rgb(31, 41, 55); /* dark:bg-gray-800 */
+  --dark-input-bg: rgb(55, 65, 81); /* dark:bg-gray-700 */
+  --dark-input-focus: rgb(75, 85, 99); /* dark:focus:bg-gray-600 */
+  --dark-text-color: white;
+  --dark-placeholder-color: rgb(156, 163, 175); /* dark:placeholder-gray-400 */
+}
+
+/* Fix for all form inputs in dark mode */
+.dark .register-form input {
+  background-color: var(--dark-input-bg) !important;
+  color: var(--dark-text-color) !important;
+}
+
+.dark .register-form input:focus {
+  background-color: var(--dark-input-focus) !important;
+}
+
+.dark .register-form input::placeholder {
+  color: var(--dark-placeholder-color) !important;
+}
+
+/* Fix for password inputs specifically */
+.dark .register-form input[type="password"],
+.dark .register-form input[type="text"] {
+  background-color: var(--dark-input-bg) !important;
+  color: var(--dark-text-color) !important;
+}
+
+.dark .register-form .input-icon {
+  color: rgb(209, 213, 219) !important; /* dark:text-gray-300 */
+}
+
+.dark .register-form .toggle-button {
+  color: rgb(209, 213, 219) !important; /* dark:text-gray-300 */
+}
+
+.dark .register-form .toggle-button:hover {
+  color: white !important; /* dark:hover:text-gray-100 */
+}
+
+/* Fix for spacing at bottom of form */
+.register-form .login-link-container {
+  margin-top: 1.5rem !important; /* mt-6 */
+  margin-bottom: 1.5rem !important; /* mb-6 */
+  padding-bottom: 0.75rem !important; /* pb-3 */
+}
+
+/* Fix the design issue at the bottom of the form */
+.register-form-container {
+  padding-bottom: 1.5rem !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Position bottom content better */
+.register-form form {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* Add extra space after login link */
+.register-form .login-link-container {
+  margin-top: auto;
+  padding-top: 1rem;
+}

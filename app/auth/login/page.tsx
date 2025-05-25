@@ -8,35 +8,6 @@ import { useRedirectIfAuthenticated } from "@/hooks/use-redirect-if-authenticate
 import { useAuth } from "@/lib/auth-context"
 import { useTheme } from "next-themes"
 
-const rememberMeStyles = `
-  .checkbox-container {
-    cursor: pointer;
-  }
-
-  .checkbox-container input {
-    display: none;
-  }
-
-  .checkbox-container svg {
-    overflow: visible;
-  }
-
-  .checkbox-path {
-    fill: none;
-    stroke: #10bc69;
-    stroke-width: 6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
-    stroke-dasharray: 241 9999999;
-    stroke-dashoffset: 0;
-  }
-
-  .checkbox-container input:checked ~ svg .checkbox-path {
-    stroke-dasharray: 70.5096664428711 9999999;
-    stroke-dashoffset: -262.2723388671875;
-  }
-`
 
 export default function LoginPage() {
   const router = useRouter()
@@ -46,7 +17,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
   
@@ -69,7 +39,7 @@ export default function LoginPage() {
   }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br py-8 px-4 bg-gray-100 dark:bg-gray-900">
-      <style>{rememberMeStyles}</style>
+      {/* No styles needed for remember me checkbox anymore */}
       <div className="flex w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden relative min-h-[600px] border border-[#10bc69]/10 bg-white dark:bg-gray-800">
         {/* Form Section */}
         <div className="flex-1 p-10 z-10 flex flex-col justify-center">        
@@ -86,7 +56,7 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full py-3 pl-12 pr-4 rounded-full bg-gray-100 text-gray-900 placeholder-gray-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10bc69] text-base transition shadow-sm"
+                className="w-full py-3 pl-12 pr-4 rounded-full bg-gray-100 text-gray-900 placeholder-gray-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#10bc69] text-base transition shadow-sm dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:bg-gray-600"
               />              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300">
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2l0 12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6z" />
@@ -109,23 +79,7 @@ export default function LoginPage() {
                   <path d="M7 11V7a5 5 0 0110 0v4" />
                 </svg>              </span>
             </div>
-            <div className="flex items-center mb-4">
-              <label className="checkbox-container flex items-center space-x-2">
-                <input 
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <svg viewBox="0 0 64 64" height="1.5em" width="1.5em">
-                  <path
-                    d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
-                    pathLength="575.0541381835938"
-                    className="checkbox-path"
-                  />
-                </svg>
-                <span className="text-sm text-gray-600 dark:text-gray-300">Remember me</span>
-              </label>
-            </div>
+            {/* Remember me checkbox removed */}
             {error && <div className="text-red-600 text-sm mt-1 font-medium">{error}</div>}
             <div className="mb-4">
               <button

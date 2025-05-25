@@ -10,8 +10,8 @@ const api = axios.create({
 // Request Interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add auth token to requests
-    const token = localStorage.getItem("auth_token")
+    // Add auth token to requests - check both localStorage and sessionStorage
+    const token = localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token")
     if (token) {
       if (!config.headers) {
         config.headers = {};
@@ -37,6 +37,7 @@ api.interceptors.response.use(
     // Handle 401 Unauthorized
     if (error.response.status === 401) {
       localStorage.removeItem("auth_token")
+      sessionStorage.removeItem("auth_token")
       delete api.defaults.headers.common["Authorization"]
       
       // Redirect to login if not already there

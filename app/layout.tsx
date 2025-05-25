@@ -2,6 +2,7 @@ import type React from "react"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import type { Metadata } from "next"
+import { Navbar } from "@/components/sections/layouts/Header"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth-context"
@@ -38,5 +39,4 @@ export default function RootLayout({
   )
 }
 
-import './globals.css'
-import { Navbar } from "@/components/sections/layouts/Header"
+

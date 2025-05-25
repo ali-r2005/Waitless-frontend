@@ -1,302 +1,253 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { ArrowLeft, Loader2, UserPlus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Search, Users, Plus, ArrowLeft, Loader2 } from "lucide-react"
 
 import { DashboardLayout } from "@/components/sections/layouts/dashboard-layout"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { PageHeader } from "@/components/ui/page-header"
+import { staffService } from "@/lib/staff-service"
+import { queueService } from "@/lib/queue-service"
+import { toast } from "@/components/ui/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-
-const addCustomerSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  phone: z.string().min(5, { message: "Please enter a valid phone number" }),
-  email: z.string().email({ message: "Please enter a valid email" }).optional().or(z.literal("")),
-  queueId: z.string({ required_error: "Please select a queue" }),
-  serviceId: z.string({ required_error: "Please select a service" }),
-  priority: z.enum(["normal", "high", "urgent"], { required_error: "Please select a priority" }).default("normal"),
-  notes: z.string().optional(),
-})
-
-type AddCustomerFormValues = z.infer<typeof addCustomerSchema>
+import type { StaffUser } from "@/types/staff"
+import type { Queue } from "@/types/queue"
 
 export default function AddCustomerPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const queueId = searchParams.get("queueId")
+  
+  const [userSearchQuery, setUserSearchQuery] = useState("")
+  const [userSearchResults, setUserSearchResults] = useState<StaffUser[]>([])
+  const [selectedUser, setSelectedUser] = useState<StaffUser | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [queues, setQueues] = useState<Queue[]>([])
+  const [selectedQueueId, setSelectedQueueId] = useState<string>(queueId || "")
 
-  // Mock data for queues and services
-  const queues = [
-    { id: "1", name: "Main Reception Queue" },
-    { id: "2", name: "Consultation Queue" },
-    { id: "3", name: "Technical Support Queue" },
-  ]
+  // Fetch available queues on component mount
+  useEffect(() => {
+    const fetchQueues = async () => {
+      try {
+        const response = await queueService.getQueues({ is_active: true })
+        if (response.data?.data) {
+          setQueues(response.data.data)
+          
+          // If no queue ID was provided in URL and we have queues, select the first one
+          if (!queueId && response.data.data.length > 0) {
+            setSelectedQueueId(response.data.data[0].id.toString())
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching queues:", error)
+        toast({
+          title: "Error",
+          description: "Failed to fetch available queues",
+          variant: "destructive",
+        })
+      }
+    }
 
-  const services = [
-    { id: "1", name: "Haircut", duration: "30 min" },
-    { id: "2", name: "Manicure", duration: "45 min" },
-    { id: "3", name: "Facial", duration: "60 min" },
-    { id: "4", name: "Beard Trim", duration: "15 min" },
-  ]
+    fetchQueues()
+  }, [queueId])
 
-  const form = useForm<AddCustomerFormValues>({
-    resolver: zodResolver(addCustomerSchema),
-    defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      priority: "normal",
-      notes: "",
-    },
-  })
+  // Handle user search input change
+  const handleUserSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserSearchQuery(e.target.value)
+  }
 
-  async function onSubmit(data: AddCustomerFormValues) {
+  // Search for users
+  const handleSearchUsers = async () => {
+    if (!userSearchQuery.trim()) return
+    
     setIsLoading(true)
-    setError(null)
-    setSuccess(false)
-
     try {
-      // In a real app, you would call an API to add the customer to the queue
-      console.log("Adding customer to queue:", data)
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      setSuccess(true)
-      form.reset()
+      const users = await staffService.searchUsersToAddAsStaff(userSearchQuery)
+      setUserSearchResults(users)
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.")
-      console.error(error)
+      console.error("Error searching for users:", error)
+      toast({
+        title: "Error",
+        description: "Failed to search for users",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Handle selecting a user
+  const handleSelectUser = (user: StaffUser) => {
+    setSelectedUser(user)
+  }
+
+  // Handle adding a customer to the queue
+  const handleAddCustomerToQueue = async () => {
+    if (!selectedUser || !selectedQueueId) {
+      toast({
+        title: "Error",
+        description: "Please select both a customer and a queue",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await queueService.addCustomerToQueue(selectedQueueId, selectedUser.id.toString())
+      
+      toast({
+        title: "Success",
+        description: `${selectedUser.name} has been added to the queue`,
+        className: "bg-waitless-green text-white",
+      })
+      
+      // Reset selection and search results
+      setSelectedUser(null)
+      setUserSearchResults([])
+      setUserSearchQuery("")
+      
+      // Navigate back to queue page
+      router.push("/queue")
+    } catch (error) {
+      console.error("Error adding customer to queue:", error)
+      toast({
+        title: "Error",
+        description: "Failed to add customer to queue",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <DashboardLayout>
-      <div className="flex flex-col">
-        <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/queue"
-                  className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between">
+          <PageHeader 
+            title="Add Customer to Queue" 
+          />
+          <Button 
+                variant="outline" 
+                onClick={() => router.push("/queue")}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Queues
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          {/* Selected Customer */}
+          {selectedUser && (
+            <div className="rounded-md border p-4">
+              <h3 className="mb-4 text-lg font-medium">Selected Customer</h3>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-waitless-green/10 flex items-center justify-center text-waitless-green">
+                    {selectedUser.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                  <div>
+                    <p className="font-medium">{selectedUser.name}</p>
+                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedUser(null)}
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Queues
-                </Link>
+                  Change
+                </Button>
               </div>
-              <h2 className="text-3xl font-bold tracking-tight">Add Customer to Queue</h2>
-              <p className="text-muted-foreground">Add a new customer to an existing queue</p>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  onClick={handleAddCustomerToQueue}
+                  disabled={isSubmitting || !selectedQueueId}
+                  className="bg-waitless-green hover:bg-waitless-green/90 text-white"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add to Queue
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
-              <CardDescription>Enter the customer's details to add them to a queue</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {error && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {success && (
-                <Alert className="mb-4 border-primary-teal bg-primary-teal/10">
-                  <AlertDescription>Customer has been successfully added to the queue!</AlertDescription>
-                </Alert>
-              )}
-
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Customer Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+1 (555) 123-4567" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email (Optional)</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="john.doe@example.com" {...field} />
-                        </FormControl>
-                        <FormDescription>For sending notifications and updates</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="queueId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Select Queue</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a queue" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {queues.map((queue) => (
-                                <SelectItem key={queue.id} value={queue.id}>
-                                  {queue.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="serviceId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Select Service</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a service" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {services.map((service) => (
-                                <SelectItem key={service.id} value={service.id}>
-                                  {service.name} ({service.duration})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>Priority</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="normal" />
-                              </FormControl>
-                              <FormLabel className="font-normal">Normal</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="high" />
-                              </FormControl>
-                              <FormLabel className="font-normal">High Priority</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="urgent" />
-                              </FormControl>
-                              <FormLabel className="font-normal">Urgent</FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Any additional information about this customer"
-                            className="min-h-[100px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex justify-end gap-4">
-                    <Button variant="outline" type="button" onClick={() => router.push("/queue")}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="bg-primary-teal hover:bg-primary-teal/90" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Adding...
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          Add to Queue
-                        </>
-                      )}
+          {/* Search results for adding new customer */}
+          {userSearchResults.length > 0 && !selectedUser && (
+            <div className="rounded-md border p-4">
+              <h3 className="mb-4 text-lg font-medium">Search Results</h3>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {userSearchResults.map((user) => (
+                  <div key={user.id} className="flex flex-col rounded-md border p-4 transition-all hover:border-waitless-green/50 hover:shadow-sm">
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-waitless-green/10 flex items-center justify-center text-waitless-green">
+                        {user.name.split(" ").map((n) => n[0]).join("")}
+                      </div>
+                      <div>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => handleSelectUser(user)} 
+                      disabled={isLoading}
+                      className="mt-auto bg-waitless-green hover:bg-waitless-green/90 text-white"
+                    >
+                      <Plus className="mr-1 h-4 w-4" />
+                      Select Customer
                     </Button>
                   </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Search form for adding new customer */}
+          {userSearchResults.length === 0 && !selectedUser && (
+            <div className="rounded-md bg-gray-50 dark:bg-gray-900/50 p-8 text-center">
+              <Users className="mx-auto h-12 w-12 text-waitless-green opacity-80 mb-4" />
+              <h3 className="mb-2 text-lg font-medium">Find Customer to Add to Queue</h3>
+              <p className="mb-4 text-sm text-muted-foreground max-w-md mx-auto">
+                Search for customers by name or email to add them to your selected queue
+              </p>
+              
+              <div className="flex max-w-md mx-auto">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search customers by name or email"
+                    value={userSearchQuery}
+                    onChange={handleUserSearchInputChange}
+                    className="pl-10 border-r-0 rounded-r-none focus-visible:ring-waitless-green/30"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearchUsers();
+                      }
+                    }}
+                  />
+                </div>
+                <Button 
+                  onClick={handleSearchUsers} 
+                  disabled={isLoading || !userSearchQuery.trim()}
+                  className="rounded-l-none bg-waitless-green hover:bg-waitless-green/90 text-white"
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

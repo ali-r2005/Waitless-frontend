@@ -3,17 +3,20 @@ import { API_ENDPOINTS } from "./api-config"
 import type { AuthResult, ResetPasswordRequestValues } from "@/types/auth"
 
 export const authService = {
-  async login(email: string, password: string, rememberMe: boolean = false) {
+  async login(email: string, password: string) {
     try {
       const res = await api.post(API_ENDPOINTS.AUTH.LOGIN, { email, password })
       const data = res.data as { access_token?: string; user?: any; message?: string }
       const { access_token, user, message } = data
       if (access_token) {
-        if (rememberMe) {
-          localStorage.setItem("auth_token", access_token)
-        } else {
-          sessionStorage.setItem("auth_token", access_token)
-        }
+        // Clear any existing tokens first
+        localStorage.removeItem("auth_token")
+        sessionStorage.removeItem("auth_token")
+        
+        // Always store token in localStorage for persistence
+        localStorage.setItem("auth_token", access_token)
+        
+        // Set the Authorization header
         api.defaults.headers.common["Authorization"] = `Bearer ${access_token}`
       }
       return { success: !!access_token, user, error: message }
@@ -41,7 +44,14 @@ export const authService = {
       const dataRes = res.data as { access_token?: string; user?: any; message?: string }
       const { access_token, user, message } = dataRes
       if (access_token) {
+        // Clear any existing tokens first
+        localStorage.removeItem("auth_token")
+        sessionStorage.removeItem("auth_token")
+        
+        // For registration, always use localStorage for persistence
         localStorage.setItem("auth_token", access_token)
+        
+        // Set the Authorization header
         api.defaults.headers.common["Authorization"] = `Bearer ${access_token}`
       }
       return { success: !!access_token, user, error: message }
@@ -62,9 +72,12 @@ export const authService = {
         message: response.data?.message || "Password reset instructions sent successfully." 
       };
     } catch (error: any) {
+      const errorMessage = error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : "Failed to send reset instructions. Please try again.";
       return {
         success: false,
-        error: error.response?.data?.message || "Failed to send reset instructions. Please try again."
+        error: errorMessage
       };
     }
   },
@@ -77,9 +90,12 @@ export const authService = {
         message: response.data?.message || "Mot de passe réinitialisé avec succès." 
       };
     } catch (error: any) {
+      const errorMessage = error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : "La réinitialisation du mot de passe a échoué. Veuillez réessayer.";
       return {
         success: false,
-        error: error.response?.data?.message || "La réinitialisation du mot de passe a échoué. Veuillez réessayer."
+        error: errorMessage
       };
     }
   },
@@ -101,12 +117,13 @@ export const authService = {
     }
   },
 
-  async setToken(token: string, rememberMe: boolean = false) {
-    if (rememberMe) {
-      localStorage.setItem("auth_token", token)
-    } else {
-      sessionStorage.setItem("auth_token", token)
-    }
+  async setToken(token: string) {
+    // Clear any existing tokens first
+    localStorage.removeItem("auth_token")
+    sessionStorage.removeItem("auth_token")
+    
+    // Always store token in localStorage for persistence
+    localStorage.setItem("auth_token", token)
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`
   },
 

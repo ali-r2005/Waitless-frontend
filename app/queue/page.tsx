@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Play, Plus, Search, Users, Filter, Loader2, Calendar, Clock } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -34,18 +35,33 @@ import { toast } from "@/components/ui/use-toast"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
-// Define the schema for creating a queue
-const createQueueSchema = z.object({
+// Define the schema for queue form (create/update)
+const queueFormSchema = z.object({
   name: z.string().min(2, { message: "Queue name must be at least 2 characters" }),
   scheduled_date: z.string().min(1, { message: "Date is required" }),
   start_time: z.string().min(1, { message: "Start time is required" }),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean(),
   branch_id: z.string().optional(),
+  id: z.string().optional() // For update operations
 })
+
+// Define the type for form values
+type QueueFormValues = z.infer<typeof queueFormSchema>
 
 export default function QueuePage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeQueues, setActiveQueues] = useState<Queue[]>([])
   const [allQueues, setAllQueues] = useState<Queue[]>([])
@@ -54,6 +70,10 @@ export default function QueuePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formMode, setFormMode] = useState<"create" | "update">("create")
+  const [selectedQueue, setSelectedQueue] = useState<Queue | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const isBusinessOwner = user?.role?.name?.toLowerCase() === "business_owner"
 
@@ -114,28 +134,39 @@ export default function QueuePage() {
     }
   }
 
-  // Initialize form for creating a queue
-  const form = useForm<z.infer<typeof createQueueSchema>>({
-    resolver: zodResolver(createQueueSchema),
+  // Initialize form for queue operations (create/update)
+  const form = useForm<QueueFormValues>({
+    resolver: zodResolver(queueFormSchema),
     defaultValues: {
       name: "",
       scheduled_date: format(new Date(), "yyyy-MM-dd"),
       start_time: "09:00",
       is_active: true,
       branch_id: "",
+      id: ""
     }
   })
 
-  // Handle form submission for queue creation
-  const handleCreateQueue = async (values: z.infer<typeof createQueueSchema>) => {
+  // Handle form submission for queue operations (create/update)
+  const handleSubmitQueue = async (values: QueueFormValues) => {
     setIsSubmitting(true)
     try {
+      // Format the start_time from HH:MM format to H:i format as required by backend
+      let formattedStartTime = values.start_time;
+      if (formattedStartTime) {
+        // Extract hours and minutes from the time string (HH:MM)
+        const [hours, minutes] = formattedStartTime.split(':');
+        // Format as H:i (remove leading zeros from hours)
+        formattedStartTime = `${parseInt(hours, 10)}:${minutes}`;
+      }
+      
       // Create a properly typed object with only the required fields
       const queueData: CreateQueueFormValues = {
-        name: values.name,
+        name: values.name.trim(),
         scheduled_date: values.scheduled_date,
         is_active: values.is_active,
-        start_time: values.start_time
+        start_time: formattedStartTime,
+        preferences: null
       }
       
       // Only add branch_id if it's provided and not empty
@@ -143,10 +174,15 @@ export default function QueuePage() {
         queueData.branch_id = parseInt(values.branch_id)
       }
       
-      console.log('Creating queue with data:', queueData)
+      let response;
+      if (formMode === "create") {
+        console.log('Creating queue with data:', queueData)
+        response = await queueService.createQueue(queueData)
+      } else {
+        console.log('Updating queue with data:', queueData)
+        response = await queueService.updateQueue(selectedQueue?.id.toString() || "", queueData)
+      }
       
-      // Call the API and wait for the response
-      const response = await queueService.createQueue(queueData)
       console.log('API response:', response)
       
       // Close the dialog first to improve user experience
@@ -161,25 +197,89 @@ export default function QueuePage() {
       // Show success message
       toast({
         title: "Success",
-        description: "Queue created successfully",
+        description: formMode === "create" ? "Queue created successfully" : "Queue updated successfully",
         className: "bg-waitless-green text-white",
       })
     } catch (error: any) {
-      console.error('Error creating queue:', error)
+      console.error(`Error ${formMode === "create" ? "creating" : "updating"} queue:`, error)
       
-      // Show error toast
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create queue",
-        variant: "destructive",
-      })
+      // Handle validation errors specifically
+      if (error.response && error.response.status === 422) {
+        const validationErrors = error.response.data.errors || {}
+        console.log('Validation errors:', validationErrors)
+        
+        // Show specific validation errors if available
+        const errorMessage = Object.values(validationErrors)
+          .flat()
+          .join('\n')
+        
+        toast({
+          title: "Validation Error",
+          description: errorMessage || "Please check your input and try again",
+          variant: "destructive",
+        })
+      } else {
+        // Show error toast
+        toast({
+          title: "Error",
+          description: error.message || `Failed to ${formMode === "create" ? "create" : "update"} queue`,
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Handle dialog open/close
+  // Handle queue deletion
+  const handleDeleteQueue = async () => {
+    if (!selectedQueue) return;
+    
+    setIsDeleting(true)
+    try {
+      // Call the API to delete the queue
+      const response = await queueService.deleteQueue(selectedQueue.id.toString())
+      console.log('Delete response:', response)
+      
+      // Show success toast with the message from the API if available
+      toast({
+        title: "Success",
+        description: response?.data?.message || "Queue deleted successfully",
+        className: "bg-waitless-green text-white",
+      })
+      
+      // Refresh the queue list
+      await fetchQueues()
+    } catch (error: any) {
+      console.error('Error deleting queue:', error)
+      
+      // Handle different error types
+      if (error.response) {
+        // The request was made and the server responded with an error status
+        const errorMessage = error.response.data?.message || "Failed to delete queue"
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      } else {
+        // Something else went wrong
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete queue",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsDeleting(false)
+      setIsDeleteDialogOpen(false)
+      setSelectedQueue(null)
+    }
+  }
+
+  // Handle dialog open for create
   const openCreateDialog = () => {
+    setFormMode("create")
     // Reset form and set branch_id if a branch is selected
     form.reset({
       name: "",
@@ -187,8 +287,31 @@ export default function QueuePage() {
       start_time: "09:00",
       is_active: true,
       branch_id: selectedBranch !== "all" ? selectedBranch : "",
+      id: ""
     })
     setIsDialogOpen(true)
+  }
+
+  // Handle dialog open for update
+  const openUpdateDialog = (queue: Queue) => {
+    setFormMode("update")
+    setSelectedQueue(queue)
+    // Set form values from the selected queue
+    form.reset({
+      name: queue.name,
+      scheduled_date: queue.scheduled_date,
+      start_time: queue.start_time,
+      is_active: queue.is_active,
+      branch_id: queue.branch_id ? queue.branch_id.toString() : "",
+      id: queue.id.toString()
+    })
+    setIsDialogOpen(true)
+  }
+
+  // Handle opening delete confirmation dialog
+  const openDeleteDialog = (queue: Queue) => {
+    setSelectedQueue(queue)
+    setIsDeleteDialogOpen(true)
   }
 
   // Handle queue filtering
@@ -226,9 +349,59 @@ export default function QueuePage() {
     })
   }
 
-  const handleQueueAction = (action: string, queueId: string) => {
+  const handleQueueAction = (action: string, queueId: number | string) => {
     console.log(`Action: ${action}, Queue ID: ${queueId}`)
-    // In a real app, you would implement the action logic here
+    
+    // Find the queue by ID
+    const queue = [...allQueues].find(q => q.id.toString() === queueId.toString())
+    if (!queue) {
+      console.error(`Queue with ID ${queueId} not found`)
+      return
+    }
+    
+    // Handle different actions
+    switch (action) {
+      case "edit":
+        openUpdateDialog(queue)
+        break
+      case "delete":
+        openDeleteDialog(queue)
+        break
+      case "manage":
+        router.push(`/queue/manage/${queueId}`)
+        break
+      case "toggle":
+        // Toggle queue active status
+        handleToggleQueueStatus(queue)
+        break
+      default:
+        console.log(`Unhandled action: ${action}`)
+    }
+  }
+  
+  // Handle toggling queue active status
+  const handleToggleQueueStatus = async (queue: Queue) => {
+    try {
+      const newStatus = !queue.is_active
+      await queueService.activateQueue(queue.id.toString(), newStatus)
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: `Queue ${newStatus ? "activated" : "deactivated"} successfully`,
+        className: "bg-waitless-green text-white",
+      })
+      
+      // Refresh queues
+      await fetchQueues()
+    } catch (error: any) {
+      console.error('Error toggling queue status:', error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update queue status",
+        variant: "destructive",
+      })
+    }
   }
 
   const filteredActiveQueues = getFilteredActiveQueues()
@@ -385,13 +558,15 @@ export default function QueuePage() {
             </TabsContent>
           </Tabs>
 
-          {/* Queue Creation Modal */}
+          {/* Queue Form Modal (Create/Update) */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Create New Queue</DialogTitle>
+                <DialogTitle>{formMode === "create" ? "Create New Queue" : "Update Queue"}</DialogTitle>
                 <DialogDescription>
-                  Fill in the details to create a new queue for your customers.
+                  {formMode === "create" 
+                    ? "Fill in the details to create a new queue for your customers."
+                    : "Update the queue details below."}
                 </DialogDescription>
               </DialogHeader>
               
@@ -399,55 +574,8 @@ export default function QueuePage() {
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
-                    setIsSubmitting(true);
-                    
-                    try {
-                      // Get form values directly
-                      const formData = form.getValues();
-                      
-                      // Create the exact object format needed by the API
-                      const queueData = {
-                        name: formData.name,
-                        scheduled_date: formData.scheduled_date,
-                        is_active: formData.is_active,
-                        start_time: formData.start_time
-                      };
-                      
-                      // Only add branch_id if it's provided
-                      if (formData.branch_id && formData.branch_id !== "") {
-                        (queueData as any).branch_id = parseInt(formData.branch_id);
-                      }
-                      
-                      console.log('Submitting queue data:', queueData);
-                      
-                      // Call the API directly
-                      await queueService.createQueue(queueData);
-                      
-                      // Close the dialog immediately
-                      setIsDialogOpen(false);
-                      
-                      // Reset form
-                      form.reset();
-                      
-                      // Refresh queues
-                      fetchQueues();
-                      
-                      // Show success message
-                      toast({
-                        title: "Success",
-                        description: "Queue created successfully",
-                        className: "bg-waitless-green text-white",
-                      });
-                    } catch (error: any) {
-                      console.error('Error creating queue:', error);
-                      toast({
-                        title: "Error",
-                        description: error.message || "Failed to create queue",
-                        variant: "destructive",
-                      });
-                    } finally {
-                      setIsSubmitting(false);
-                    }
+                    const formData = form.getValues();
+                    handleSubmitQueue(formData);
                   }}
                   className="space-y-4"
                 >
@@ -539,7 +667,9 @@ export default function QueuePage() {
                         <div className="space-y-0.5">
                           <FormLabel className="text-base">Active Queue</FormLabel>
                           <FormDescription>
-                            Set the queue as active immediately after creation
+                            {formMode === "create"
+                              ? "Set the queue as active immediately after creation"
+                              : "Set the queue as active or inactive"}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -557,6 +687,7 @@ export default function QueuePage() {
                       type="button" 
                       variant="outline" 
                       onClick={() => setIsDialogOpen(false)}
+                      disabled={isSubmitting}
                     >
                       Cancel
                     </Button>
@@ -568,10 +699,10 @@ export default function QueuePage() {
                       {isSubmitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating...
+                          {formMode === "create" ? "Creating..." : "Updating..."}
                         </>
                       ) : (
-                        "Create Queue"
+                        formMode === "create" ? "Create Queue" : "Update Queue"
                       )}
                     </Button>
                   </div>
@@ -579,6 +710,39 @@ export default function QueuePage() {
               </Form>
             </DialogContent>
           </Dialog>
+          
+          {/* Delete Queue Confirmation Dialog */}
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to delete this queue?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the queue
+                  and all associated customer data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault()
+                    handleDeleteQueue()
+                  }}
+                  disabled={isDeleting}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete Queue"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </DashboardLayout>

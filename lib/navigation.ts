@@ -35,7 +35,6 @@ const navConfig: NavigationConfig = {
       icon: navIcons.home,
       submenu: [
         { title: "View Queues", href: "/queue", icon: navIcons.home },
-        { title: "Add Customer", href: "/queue/add-customer", icon: navIcons.users },
         { title: "Start Queue", href: "/queue/start", icon: navIcons.home },
       ],
     },
@@ -51,7 +50,6 @@ const navConfig: NavigationConfig = {
       icon: navIcons.home,
       submenu: [
         { title: "View Queues", href: "/queue", icon: navIcons.home },
-        { title: "Add Customer", href: "/queue/add-customer", icon: navIcons.users },
         { title: "Start Queue", href: "/queue/start", icon: navIcons.home },
       ],
     },

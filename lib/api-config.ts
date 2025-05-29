@@ -33,6 +33,11 @@ export const API_ENDPOINTS = {
     MARK_LATE: "/api/queue-management/customers/late",
     GET_LATE: "/api/queue-management/customers/late",
     REINSERT_LATE: "/api/queue-management/customers/reinsert",
+    // New endpoints for pause/resume functionality
+    PAUSE: "/api/queue-management/pause",
+    RESUME: "/api/queue-management/resume",
+    // Analytics endpoints
+    SERVED_TODAY: "/api/queue-management/customers/served-today",
   },
   // User Management
   USERS: {

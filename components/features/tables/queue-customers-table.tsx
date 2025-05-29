@@ -1,8 +1,10 @@
 "use client"
 
-import { Check, MoreHorizontal, X } from "lucide-react"
+import { User, CheckCircle2, Clock, XCircle, AlertTriangle, MoreHorizontal, Check, X } from "lucide-react"
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   DropdownMenu,
@@ -12,15 +14,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { PriorityBadge } from "@/components/features/badges/priority-badge"
+import { formatDate } from "@/lib/utils"
 import type { QueueCustomer } from "@/types/queue"
 
 interface QueueCustomersTableProps {
   customers: QueueCustomer[]
   onAction: (action: string, customerId: string) => void
+  queueActive?: boolean // Whether the queue is active and not paused
 }
 
-export function QueueCustomersTable({ customers, onAction }: QueueCustomersTableProps) {
+export function QueueCustomersTable({ customers, onAction, queueActive = true }: QueueCustomersTableProps) {
   const handleAction = (action: string, customerId: string) => {
     onAction(action, customerId)
   }
@@ -34,102 +37,167 @@ export function QueueCustomersTable({ customers, onAction }: QueueCustomersTable
       </Card>
     )
   }
+  
+  // Group customers by status
+  const servingCustomers = customers.filter(c => c.pivot?.status === 'serving')
+  const waitingCustomers = customers.filter(c => c.pivot?.status === 'waiting')
 
   return (
-    <div className="grid gap-4">
-      {customers.map((customer) => (
-        <Card key={customer.id} className={customer.status === "current" ? "border-primary-teal" : ""}>
-          <div className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-lg font-semibold">
-                  {customer.name}
-                  {customer.status === "current" && (
-                    <span className="rounded-full bg-primary-teal px-2 py-0.5 text-xs text-white">Current</span>
-                  )}
-                  <PriorityBadge priority={customer.priority} />
-                </div>
-                <p className="text-sm text-muted-foreground">{customer.phone}</p>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleAction("edit", customer.id)}>Edit Details</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAction("changeService", customer.id)}>
-                    Change Service
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAction("changePriority", customer.id)}>
-                    Change Priority
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => handleAction("remove", customer.id)}>
-                    Remove from Queue
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Service</p>
-                <p className="font-medium">{customer.service}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Joined At</p>
-                <p className="font-medium">{customer.joinedAt}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Wait Time</p>
-                <p className="font-medium">{customer.estimatedWait}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Position</p>
-                <p className="font-medium">
-                  {customer.status === "current"
-                    ? "Now Serving"
-                    : `#${customers.findIndex((c) => c.id === customer.id) + 1}`}
-                </p>
-              </div>
-            </div>
-
-            {customer.status === "current" ? (
-              <div className="mt-4 flex items-center gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => handleAction("markAbsent", customer.id)}>
-                  <X className="mr-2 h-4 w-4" />
-                  Mark as Absent
-                </Button>
-                <Button
-                  className="flex-1 bg-primary-teal hover:bg-primary-teal/90"
-                  onClick={() => handleAction("complete", customer.id)}
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Complete & Next
-                </Button>
-              </div>
-            ) : (
-              <div className="mt-4 flex items-center gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => handleAction("remove", customer.id)}>
-                  <X className="mr-2 h-4 w-4" />
-                  Remove
-                </Button>
-                <Button
-                  className="flex-1 bg-primary-teal hover:bg-primary-teal/90"
-                  onClick={() => handleAction("serveNow", customer.id)}
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Serve Now
-                </Button>
-              </div>
-            )}
+    <div className="space-y-8">
+      {/* Serving Section */}
+      {servingCustomers.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 font-medium">
+            <Clock className="h-5 w-5 text-primary-teal" />
+            <h3>Now Serving</h3>
           </div>
-        </Card>
-      ))}
+          <div className="grid gap-4">
+            {servingCustomers.map((customer) => (
+              <Card key={customer.id} className="border-primary-teal">
+                <div className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="flex items-center gap-2 font-medium">
+                            {customer.name}
+                            <Badge className="bg-primary-teal">Current</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{customer.email || customer.phone}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleAction("edit", customer.id.toString())}>Edit Details</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive" onClick={() => handleAction("remove", customer.id.toString())}>
+                          Remove from Queue
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Ticket #</p>
+                      <p className="font-medium">{customer.pivot?.ticket_number || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Joined At</p>
+                      <p className="font-medium">{formatDate(customer.pivot?.created_at, { hour: 'numeric', minute: '2-digit' })}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Position</p>
+                      <p className="font-medium">#{customer.pivot?.position || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Wait Time</p>
+                      <p className="font-medium">{Math.round((customer.pivot?.waiting_time || 0) / 60)} min</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1" 
+                      onClick={() => handleAction("markLate", customer.id.toString())}
+                      disabled={!queueActive}
+                    >
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Mark as Late
+                    </Button>
+                    <Button
+                      className="flex-1 bg-primary-teal hover:bg-primary-teal/90"
+                      onClick={() => handleAction("complete", customer.id.toString())}
+                      disabled={!queueActive}
+                    >
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Complete
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Waiting Section */}
+      {waitingCustomers.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 font-medium">
+            <User className="h-5 w-5 text-primary-teal" />
+            <h3>Waiting ({waitingCustomers.length})</h3>
+          </div>
+          <div className="rounded-md border">
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="p-3 text-left font-medium">Customer</th>
+                  <th className="p-3 text-left font-medium">Ticket #</th>
+                  <th className="p-3 text-left font-medium">Position</th>
+                  <th className="p-3 text-left font-medium">Joined At</th>
+                  <th className="p-3 text-left font-medium">Wait Time</th>
+                  <th className="p-3 text-left font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {waitingCustomers.map((customer) => (
+                  <tr key={customer.id} className="border-t">
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{customer.name}</div>
+                          <div className="text-sm text-muted-foreground">{customer.email || customer.phone}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3">{customer.pivot?.ticket_number || 'N/A'}</td>
+                    <td className="p-3">#{customer.pivot?.position || 0}</td>
+                    <td className="p-3">{formatDate(customer.pivot?.created_at, { hour: 'numeric', minute: '2-digit' })}</td>
+                    <td className="p-3">{Math.round((customer.pivot?.waiting_time || 0) / 60)} min</td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction("remove", customer.id.toString())}
+                        >
+                          <X className="mr-1 h-3 w-3" />
+                          Remove
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-primary-teal hover:bg-primary-teal/90"
+                          onClick={() => handleAction("serveNow", customer.id.toString())}
+                          disabled={!queueActive}
+                        >
+                          <Check className="mr-1 h-3 w-3" />
+                          Serve Now
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -69,7 +69,7 @@ export const authService = {
       const response = await api.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, data);
       return { 
         success: true,
-        message: response.data?.message || "Password reset instructions sent successfully." 
+        message: (response.data as { message?: string })?.message || "Password reset instructions sent successfully." 
       };
     } catch (error: any) {
       const errorMessage = error.response && error.response.data && error.response.data.message
@@ -87,7 +87,7 @@ export const authService = {
       const response = await api.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, data);
       return { 
         success: true,
-        message: response.data?.message || "Mot de passe réinitialisé avec succès." 
+        message: (response.data as { message?: string })?.message || "Mot de passe réinitialisé avec succès." 
       };
     } catch (error: any) {
       const errorMessage = error.response && error.response.data && error.response.data.message
@@ -159,4 +159,23 @@ export async function updatePassword(data: any) {
       error: error.response?.data?.message || "Failed to update password" 
     }
   }
+}
+
+/**
+ * Get the current authentication token from storage
+ * @returns The authentication token or null if not found
+ */
+export function getAuthToken(): string | null {
+  if (typeof window === 'undefined') {
+    return null; // Return null in server-side context
+  }
+  
+  // First check localStorage for the token
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    return token;
+  }
+  
+  // If not in localStorage, check sessionStorage
+  return sessionStorage.getItem('auth_token');
 }

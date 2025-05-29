@@ -5,7 +5,8 @@ import type {
   QueueCustomer, 
   CreateQueueFormValues, 
   AddCustomerFormValues,
-  StartQueueFormValues
+  StartQueueFormValues,
+  ServedCustomerStats
 } from "@/types/queue"
 
 // Define API response types
@@ -45,6 +46,16 @@ export const queueService = {
   async deleteQueue(id: string) {
     return api.delete<ApiResponse>(API_ENDPOINTS.QUEUES.DELETE(id));
   },
+  
+  /**
+   * Checks if a queue has a latecomer queue associated with it
+   * @param queue_id The ID of the queue to check
+   * @returns Promise with the response containing latecomer queue information
+   */
+  async hasLatecomersQueue(queue_id: string) {
+    return api.get<ApiResponse<{id: number, queue_id: number}>>(`/api/queues/${queue_id}/latecomer-queue`);
+  },
+
 
   // Queue Customer Management
   async searchCustomers(name: string) {
@@ -121,5 +132,44 @@ export const queueService = {
       user_id,
       position
     });
-  }
+  },
+
+  // Queue Pause/Resume Operations
+  /**
+   * Pauses an active queue temporarily
+   * @param queue_id The ID of the queue to pause
+   * @param reason Optional reason for pausing the queue
+   * @returns Promise with the response
+   */
+  async pauseQueue(queue_id: string, reason?: string) {
+    return api.post<ApiResponse>(API_ENDPOINTS.QUEUE_MANAGEMENT.PAUSE, {
+      queue_id,
+      reason
+    });
+  },
+
+  /**
+   * Resumes a paused queue
+   * @param queue_id The ID of the queue to resume
+   * @returns Promise with the response
+   */
+  async resumeQueue(queue_id: string) {
+    return api.post<ApiResponse>(API_ENDPOINTS.QUEUE_MANAGEMENT.RESUME, {
+      queue_id
+    });
+  },
+
+  // Analytics Endpoints
+  /**
+   * Retrieves a list of customers served today for a specific queue with statistics
+   * @param queue_id The ID of the queue
+   * @returns Promise with the response containing served customers and statistics
+   */
+  async getCustomersServedToday(queue_id: string) {
+    return api.get<ApiResponse<ServedCustomerStats>>(API_ENDPOINTS.QUEUE_MANAGEMENT.SERVED_TODAY, {
+      params: { queue_id }
+    });
+  },
+  
+  
 }

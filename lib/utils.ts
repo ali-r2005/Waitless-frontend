@@ -50,3 +50,45 @@ export const setLocalStorage = (key: string, value: any) => {
     console.error('Error setting localStorage:', error)
   }
 }
+
+/**
+ * Format a date in a locale-aware manner
+ * @param dateString Date string or Date object to format
+ * @param options Intl.DateTimeFormatOptions to customize formatting
+ * @returns Formatted date string
+ */
+export const formatDate = (dateString: string | Date, options: Intl.DateTimeFormatOptions = {}) => {
+  if (!dateString) return ''
+  
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString
+  
+  // Default options for date formatting
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    ...options
+  }
+  
+  return new Intl.DateTimeFormat('en-US', defaultOptions).format(date)
+}
+
+/**
+ * Format a time string
+ * @param timeString Time string in HH:MM format
+ * @returns Formatted time (e.g., "9:00 AM")
+ */
+export const formatTime = (timeString: string) => {
+  if (!timeString) return ''
+  
+  // If it's already in HH:MM format, parse it
+  const [hours, minutes] = timeString.split(':').map(Number)
+  
+  if (isNaN(hours) || isNaN(minutes)) return timeString
+  
+  return new Date(0, 0, 0, hours, minutes).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  })
+}

@@ -95,7 +95,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                     </div>
                     <div>
                       <p className="text-muted-foreground">Joined At</p>
-                      <p className="font-medium">{formatDate(customer.pivot?.created_at, { hour: 'numeric', minute: '2-digit' })}</p>
+                      <p>{customer.pivot?.created_at ? formatDate(customer.pivot.created_at, { hour: 'numeric', minute: '2-digit' }) : 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Position</p>
@@ -111,7 +111,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                     <Button 
                       variant="outline" 
                       className="flex-1" 
-                      onClick={() => handleAction("markLate", customer.id.toString())}
+                      onClick={() => handleAction("late", customer.id.toString())}
                       disabled={!queueActive}
                     >
                       <AlertTriangle className="mr-2 h-4 w-4" />
@@ -168,7 +168,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                     </td>
                     <td className="p-3">{customer.pivot?.ticket_number || 'N/A'}</td>
                     <td className="p-3">#{customer.pivot?.position || 0}</td>
-                    <td className="p-3">{formatDate(customer.pivot?.created_at, { hour: 'numeric', minute: '2-digit' })}</td>
+                    <td className="p-3">{customer.pivot?.created_at ? formatDate(customer.pivot.created_at, { hour: 'numeric', minute: '2-digit' }) : 'N/A'}</td>
                     <td className="p-3">{Math.round((customer.pivot?.waiting_time || 0) / 60)} min</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
@@ -176,18 +176,10 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                           variant="outline"
                           size="sm"
                           onClick={() => handleAction("remove", customer.id.toString())}
+                          disabled={!queueActive}
                         >
                           <X className="mr-1 h-3 w-3" />
                           Remove
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-primary-teal hover:bg-primary-teal/90"
-                          onClick={() => handleAction("serveNow", customer.id.toString())}
-                          disabled={!queueActive}
-                        >
-                          <Check className="mr-1 h-3 w-3" />
-                          Serve Now
                         </Button>
                       </div>
                     </td>

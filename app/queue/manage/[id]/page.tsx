@@ -98,9 +98,14 @@ export default function ManageQueuePage() {
   
   // Helper function to update customer groups
   const updateCustomerGroups = (users: any[]) => {
+    if (!users || !Array.isArray(users)) return
+    
     // Group customers by their status
+    // Note: API may return 'serving' or 'being_served' depending on backend implementation
     const waiting = users.filter(user => user.pivot?.status === 'waiting')
-    const serving = users.filter(user => user.pivot?.status === 'serving')
+    const serving = users.filter(user => 
+      user.pivot?.status === 'serving' || user.pivot?.status === 'being_served'
+    )
     const late = users.filter(user => user.pivot?.status === 'late')
     
     setWaitingCustomers(waiting)
@@ -146,11 +151,16 @@ export default function ManageQueuePage() {
     }
   }
   
-  // Fetch all data
+  // Fetch all data - optimized to avoid unnecessary fetches
   const fetchAllData = async () => {
+    // Start with the main queue details which includes basic customer data
     await fetchQueueDetails()
-    await fetchServedCustomers()
-    await fetchLateCustomers()
+    
+    // Fetch additional data in parallel for better performance
+    await Promise.all([
+      fetchServedCustomers(),
+      fetchLateCustomers()
+    ])
   }
   
   // Set up real-time updates
@@ -165,24 +175,56 @@ export default function ManageQueuePage() {
       channel.listen('.StaffQueueUpdate', (data: QueueUpdate) => {
         console.log('Real-time queue update:', data)
         
+        // Handle updates in a more granular way to optimize performance
+        const updates: Promise<any>[] = []
+        
         // Update queue state if provided
         if (data.queue_state) {
           setQueueState(data.queue_state as 'active' | 'paused' | 'inactive' | 'ready_to_call')
         }
         
-        // Refresh customer lists if there are customer updates
+        // Handle specific update types efficiently
+        if (data.queue?.is_active !== undefined || data.queue?.is_paused !== undefined) {
+          // Only queue status changed, no need to refresh customers
+          if (data.queue.is_active) {
+            setQueueState(data.queue.is_paused ? 'paused' : 'active')
+          } else {
+            setQueueState('inactive')
+          }
+        }
+        
+        // If we have specific customer updates, use them directly
         if (data.customers && data.customers.length > 0) {
-          fetchQueueCustomers()
+          // Only fetch customers if we don't have the full data in the update
+          // Check if the customer data includes pivot information
+          const hasDetailedData = data.customers.some(c => 'pivot' in c)
+          if (!hasDetailedData) {
+            updates.push(fetchQueueCustomers())
+          } else {
+            // Use the customer data from the update directly
+            const allUsers = [...waitingCustomers, ...servingCustomers, ...lateCustomers]
+            const updatedUsers = allUsers.map(user => {
+              const updatedUser = data.customers?.find(c => c.id === user.id)
+              return updatedUser ? { ...user, ...updatedUser } : user
+            })
+            updateCustomerGroups(updatedUsers)
+          }
         }
         
-        // If a customer has been served, refresh the served customers list
+        // Handle specific events
         if (data.customer_served) {
-          fetchServedCustomers()
+          updates.push(fetchServedCustomers())
         }
         
-        // If a customer has been marked late, refresh the late customers list
         if (data.customer_late) {
-          fetchLateCustomers()
+          updates.push(fetchLateCustomers())
+        }
+        
+        // Execute all needed updates in parallel
+        if (updates.length > 0) {
+          Promise.all(updates).catch(err => {
+            console.error('Error processing real-time updates:', err)
+          })
         }
       })
       
@@ -481,15 +523,6 @@ export default function ManageQueuePage() {
                   </Button>
                 </Link>
                 
-                {/* Call Next Customer Button */}
-                <Button 
-                  className="bg-primary-teal hover:bg-primary-teal/90"
-                  onClick={callNextCustomer}
-                  disabled={queueState !== 'active' || isCallNextDisabled || waitingCustomers.length === 0}
-                >
-                  <ArrowRight className="mr-2 h-4 w-4" />
-                  Call Next Customer
-                </Button>
               </>
             }
           />
@@ -505,17 +538,29 @@ export default function ManageQueuePage() {
           }} />
 
           <Tabs defaultValue="customer-waiting" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="customer-waiting">
-                Customer waiting ({waitingCustomers.length + servingCustomers.length})
-              </TabsTrigger>
-              <TabsTrigger value="served">
-                Served Today ({servedCustomers.length})
-              </TabsTrigger>
-              <TabsTrigger value="latecomers">
-                Latecomers ({lateCustomers.length})
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex justify-between items-center mb-2">
+              <TabsList>
+                <TabsTrigger value="customer-waiting">
+                  Customer waiting ({waitingCustomers.length + servingCustomers.length})
+                </TabsTrigger>
+                <TabsTrigger value="served">
+                  Served Today ({servedCustomers.length})
+                </TabsTrigger>
+                <TabsTrigger value="latecomers">
+                  Latecomers ({lateCustomers.length})
+                </TabsTrigger>
+              </TabsList>
+              
+              {/* Call Next Customer Button - Positioned near the tabs */}
+              <Button 
+                className="bg-primary-teal hover:bg-primary-teal/90 ml-4"
+                onClick={callNextCustomer}
+                disabled={queueState !== 'active' || isCallNextDisabled || waitingCustomers.length === 0}
+              >
+                <ArrowRight className="mr-2 h-4 w-4" />
+                Call Next Customer
+              </Button>
+            </div>
 
             <TabsContent value="customer-waiting">
               <div className="space-y-4">

@@ -75,7 +75,25 @@ export default function QueuePage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   
-  const isBusinessOwner = user?.role?.name?.toLowerCase() === "business_owner"
+  const isBusinessOwner = user?.role?.toLowerCase() === "business_owner"
+  const isBranchManager = user?.role?.toLowerCase() === "branch_manager"
+  const isStaff = user?.role?.toLowerCase() === "staff"
+  
+  // Check if the user has permission to perform actions on a specific queue
+  const hasQueueActionPermission = (queue: Queue) => {
+    // Business owner should not see queue actions
+    if (isBusinessOwner) return false
+    
+    // Branch manager and staff can only manage queues assigned to them
+    if ((isBranchManager || isStaff) && queue.staff_id) {
+      return queue.staff_id.toString() === user?.staff?.id?.toString()
+    }
+    
+    return false
+  }
+  
+  // Check if user can add new queues (only branch managers)
+  const canAddQueue = isBranchManager
 
   // Fetch queues and branches
   useEffect(() => {
@@ -370,6 +388,10 @@ export default function QueuePage() {
       case "manage":
         router.push(`/queue/manage/${queueId}`)
         break
+      case "add-customer":
+        // Navigate to add customer page
+        router.push(`/queue/${queueId}/add-customer`)
+        break
       case "toggle":
         // Toggle queue active status
         handleToggleQueueStatus(queue)
@@ -414,12 +436,12 @@ export default function QueuePage() {
           <PageHeader
             title="Queue Management"
             actions={
-              <>
+              canAddQueue ? (
                 <Button variant="outline" onClick={openCreateDialog}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Queue
                 </Button>
-              </>
+              ) : null
             }
           />
 
@@ -469,7 +491,11 @@ export default function QueuePage() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {filteredActiveQueues.map((queue) => (
-                    <QueueCard key={queue.id} queue={queue} onAction={handleQueueAction} />
+                    <QueueCard 
+                      key={queue.id} 
+                      queue={queue} 
+                      onAction={hasQueueActionPermission(queue) ? handleQueueAction : undefined} 
+                    />
                   ))}
 
                   {filteredActiveQueues.length === 0 && (
@@ -533,7 +559,11 @@ export default function QueuePage() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {filteredAllQueues.map((queue) => (
-                    <QueueCard key={queue.id} queue={queue} onAction={handleQueueAction} />
+                    <QueueCard 
+                      key={queue.id} 
+                      queue={queue} 
+                      onAction={hasQueueActionPermission(queue) ? handleQueueAction : undefined} 
+                    />
                   ))}
 
                   {filteredAllQueues.length === 0 && (

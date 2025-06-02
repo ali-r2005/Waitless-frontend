@@ -9,7 +9,7 @@ interface User {
   email: string;
   avatar?: string;
   role: string;
-  createdAt?: string;
+  created_at?: string;
 }
 
 interface UserProfileCardProps {
@@ -40,11 +40,11 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
               <span className="text-sm">{user.role.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}</span>
             </div>
             <Separator />
-            {user.createdAt && (
+            {user.created_at && (
               <>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Member Since</span>
-                  <span className="text-sm">{user.createdAt}</span>
+                  <span className="text-sm">{new Date(user.created_at).toLocaleString('en-US', { dateStyle: 'medium'})}</span>
                 </div>
               </>
             )}

@@ -90,7 +90,7 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
       </CardHeader>
       <CardContent>
         {success && (
-          <Alert className="mb-4 border-primary-teal bg-primary-teal/10">
+          <Alert className="mb-4 border-waitless-green bg-waitless-green/10">
             <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
@@ -151,7 +151,7 @@ export function PasswordForm({ onSubmit, isLoading: externalLoading }: PasswordF
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" className="bg-primary-teal hover:bg-primary-teal/90" disabled={isLoading}>
+              <Button type="submit" className="bg-waitless-green hover:bg-waitless-green/90 text-white" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

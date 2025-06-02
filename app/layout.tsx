@@ -9,9 +9,12 @@ import { AuthProvider } from "@/lib/auth-context"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "QueueMaster - Business Queue Management",
+  title: "Waitless - Business Queue Management",
   description: "Manage your business queues and staff efficiently",
-  generator: 'v0.dev'
+  icons: {
+    icon: '/images/logoqueue.png',
+    apple: '/images/logoqueue.png',
+  }
 }
 
 export default function RootLayout({

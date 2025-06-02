@@ -77,7 +77,7 @@ export function ProfileForm({ defaultValues, onSubmit, isLoading: externalLoadin
       </CardHeader>
       <CardContent>
         {success && (
-          <Alert className="mb-4 border-primary-teal bg-primary-teal/10">
+          <Alert className="mb-4 border-waitless-green bg-waitless-green/10">
             <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
@@ -140,7 +140,7 @@ export function ProfileForm({ defaultValues, onSubmit, isLoading: externalLoadin
                 name="jobTitle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Job Title</FormLabel>
+                    <FormLabel>Job Role</FormLabel>
                     <FormControl>
                       <Input placeholder="Branch Manager" {...field} />
                     </FormControl>
@@ -151,7 +151,7 @@ export function ProfileForm({ defaultValues, onSubmit, isLoading: externalLoadin
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" className="bg-primary-teal hover:bg-primary-teal/90" disabled={isLoading}>
+              <Button type="submit" className="bg-waitless-green hover:bg-waitless-green/90 text-white" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,4 +1,4 @@
-import { Home, Building2, Users, Settings, LogOut, Shield } from "lucide-react"
+import { Home, Building2, Users, Settings, LogOut, Shield, Clock, ListOrdered, CalendarClock } from "lucide-react"
 
 import type { NavConfig, NavItemType } from "@/types/navigation"
 import type { UserRole } from "@/types/user"
@@ -20,7 +20,8 @@ const navIcons = {
   users: "users",
   settings: "settings",
   logout: "logout",
-  roles: "roles"
+  roles: "roles",
+  queue: "queue"
 }
 
 const navConfig: NavigationConfig = {
@@ -29,49 +30,15 @@ const navConfig: NavigationConfig = {
     { title: "Branches", href: "/branches", icon: navIcons.building },
     { title: "Role Management", href: "/roles", icon: navIcons.roles },
     { title: "Staff", href: "/staff", icon: navIcons.users },
-    {
-      title: "Queue Management",
-      href: "/queue",
-      icon: navIcons.home,
-      submenu: [
-        { title: "View Queues", href: "/queue", icon: navIcons.home },
-        { title: "Start Queue", href: "/queue/start", icon: navIcons.home },
-      ],
-    },
-    { title: "Invitations", href: "/invitations", icon: navIcons.home },
-    { title: "Settings", href: "/settings", icon: navIcons.settings },
-    { title: "Logout", href: "/auth/login", icon: navIcons.logout },
-  ],
+    { title: "Queue Management", href: "/queue", icon: navIcons.queue }],
   branch_manager: [
     { title: "Dashboard", href: "/dashboard", icon: navIcons.home },
-    {
-      title: "Queue Management",
-      href: "/queue",
-      icon: navIcons.home,
-      submenu: [
-        { title: "View Queues", href: "/queue", icon: navIcons.home },
-        { title: "Start Queue", href: "/queue/start", icon: navIcons.home },
-      ],
-    },
     { title: "Staff", href: "/staff", icon: navIcons.users },
-    { title: "Invitations", href: "/invitations", icon: navIcons.home },
-    { title: "Settings", href: "/settings", icon: navIcons.settings },
-    { title: "Logout", href: "/auth/login", icon: navIcons.logout },
-  ],
+    { title: "Queue Management", href: "/queue", icon: navIcons.queue }],
+    
   staff: [
-    { title: "View Queues", href: "/queue", icon: navIcons.home },
-    { title: "Add Customer", href: "/queue/add-customer", icon: navIcons.users },
-    { title: "Start Queue", href: "/queue/start", icon: navIcons.home },
-    { title: "My Profile", href: "/profile", icon: navIcons.users },
-    { title: "Settings", href: "/settings", icon: navIcons.settings },
-    { title: "Logout", href: "/auth/login", icon: navIcons.logout },
-  ],
-  admin: [
     { title: "Dashboard", href: "/dashboard", icon: navIcons.home },
-    { title: "Businesses", href: "/businesses", icon: navIcons.building },
-    { title: "Analytics", href: "/analytics", icon: navIcons.home },
-    { title: "Settings", href: "/settings", icon: navIcons.settings },
-  ],
+    { title: "Queue Management", href: "/queue", icon: navIcons.queue }]
 }
 
 export const getNavItems = (role: string) => {
@@ -86,6 +53,7 @@ export const getIconComponent = (iconName: string) => {
     settings: Settings,
     logout: LogOut,
     roles: Shield,
+    queue: CalendarClock,
   }
   return iconMap[iconName as keyof typeof iconMap] || Home
 }

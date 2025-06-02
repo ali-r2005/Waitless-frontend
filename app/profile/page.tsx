@@ -141,7 +141,7 @@ export default function ProfilePage() {
                       name: user.name,
                       email: user.email,
                       phone: user.phone || "",
-                      jobTitle: user.jobTitle || "",
+                      jobTitle: user.staff?.role?.name || "",
                     }}
                     onSubmit={handleProfileSubmit}
                     isLoading={isSubmitting}

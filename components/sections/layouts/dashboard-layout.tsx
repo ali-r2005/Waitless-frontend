@@ -2,7 +2,7 @@
 
 import type React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 import { Clock, Globe, Moon, Sun } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -18,39 +18,19 @@ import type { UserProfile } from "@/types/user"
 interface DashboardLayoutProps {
   children: React.ReactNode
   user?: UserProfile
-  businessName?: string
 }
 
 export function DashboardLayout({
   children,
-  user = {
-    id: "1",
-    name: "John Doe",
-    email: "admin@example.com",
-    role: "business_owner",
-    createdAt: "January 15, 2023",
-  },
-  businessName = "QueueMaster",
 }: DashboardLayoutProps) {
-  const pathname = usePathname()
   const { theme, setTheme } = useTheme()
-  const navItems = getNavItems(user.role)
+  const { user } = useAuth()
+  const navItems = getNavItems(user?.role || "")
 
   return (
     <div className="flex min-h-screen flex-col">
       {/* Top Navigation */}
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6">
-        <div className="flex items-center gap-2">
-          <MobileNav
-            items={navItems}
-            businessName={businessName}
-            logo={<Clock className="h-6 w-6 text-primary-teal" />}
-          />
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold md:hidden">
-            <Clock className="h-6 w-6 text-primary-teal" />
-            <span>{businessName}</span>
-          </Link>
-        </div>
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -70,9 +50,9 @@ export function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                  <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name || ""} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user.name
+                    {user?.name
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}

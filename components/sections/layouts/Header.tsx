@@ -47,6 +47,13 @@ export function Navbar() {
     const role = user.role.toLowerCase()
     return ['staff', 'branch_manager', 'business_owner'].includes(role)
   }, [isAuthenticated, user?.role])
+  
+  // Check if user has customer role
+  const isCustomerRole = useMemo(() => {
+    if (!isAuthenticated || !user?.role) return false
+    const role = user.role.toLowerCase()
+    return role === 'customer'
+  }, [isAuthenticated, user?.role])
 
   useEffect(() => {
     setMounted(true)
@@ -180,8 +187,8 @@ export function Navbar() {
             </button>
           </div>
 
-          {/* Desktop Navigation Links - Hidden for staff roles */}
-          {!isStaffRole && (
+          {/* Desktop Navigation Links - Hidden for staff roles but shown for customers and non-authenticated users */}
+          {(!isStaffRole || isCustomerRole) && (
             <div className="hidden md:flex items-center space-x-8">
               <button
                 onClick={() => scrollToSection("home")}
@@ -207,6 +214,14 @@ export function Navbar() {
               >
                 Contact
               </button>
+              {isCustomerRole && (
+                <Link
+                  href="/customer"
+                  className="text-gray-600 hover:text-[#10bc69] dark:text-gray-300 dark:hover:text-[#10bc69] transition-colors"
+                >
+                  My Queues
+                </Link>
+              )}
             </div>
           )}
 

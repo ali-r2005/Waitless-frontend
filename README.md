@@ -1,6 +1,6 @@
-# QueueMaster Frontend
+# Waitless Frontend
 
-QueueMaster is a business queue management system built with Next.js, TypeScript, and Tailwind CSS. It helps businesses manage their queues, staff, and customer flow efficiently.
+Waitless is a business queue management system built with Next.js, TypeScript, and Tailwind CSS. It helps businesses manage their queues, staff, and customer flow efficiently.
 
 ## Getting Started
 

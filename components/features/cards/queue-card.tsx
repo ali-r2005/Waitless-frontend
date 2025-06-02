@@ -74,26 +74,29 @@ export function QueueCard({ queue, onAction }: QueueCardProps) {
               {queue.branch?.name || "No branch assigned"}
             </CardDescription>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="flex-shrink-0">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handleAction("manage")}>Manage Queue</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleAction("edit")}>Edit Queue</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleAction("toggle")}>
-                {queue.is_active ? "Deactivate Queue" : "Activate Queue"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={() => handleAction("delete")}>
-                Delete Queue
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {onAction && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="flex-shrink-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleAction("manage")}>Manage Queue</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAction("add-customer")}>Add Customer</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAction("edit")}>Edit Queue</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAction("toggle")}>
+                  {queue.is_active ? "Deactivate Queue" : "Activate Queue"}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive" onClick={() => handleAction("delete")}>
+                  Delete Queue
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -116,40 +119,44 @@ export function QueueCard({ queue, onAction }: QueueCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col gap-2 border-t bg-muted/50 px-4 sm:px-6 py-3">
-        <div className="flex flex-row justify-between gap-2">
-          <Link href={`/queue/add-customer?queueId=${queue.id}`} className="w-full sm:w-auto">
-            <Button variant="outline" size="sm" className="w-full">
-              <Users className="mr-1 h-4 w-4" />
-              Add Customer
-            </Button>
-          </Link>
-          <Link href={`/queue/manage/${queue.id}`} className="w-full sm:w-auto">
-            <Button size="sm" className="w-full bg-waitless-green hover:bg-waitless-green/90 text-white">
-              Manage Queue
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="flex flex-row justify-between gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-1/2"
-            onClick={() => handleAction("edit")}
-          >
-            <Edit className="mr-1 h-4 w-4" />
-            Update Queue
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-1/2 text-destructive border-destructive hover:bg-destructive/10"
-            onClick={() => handleAction("delete")}
-          >
-            <Trash2 className="mr-1 h-4 w-4" />
-            Delete Queue
-          </Button>
-        </div>
+        {onAction && (
+          <>
+            <div className="flex flex-row justify-between gap-2">
+              <Link href={`/queue/add-customer?queueId=${queue.id}`} className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Users className="mr-1 h-4 w-4" />
+                  Add Customer
+                </Button>
+              </Link>
+              <Link href={`/queue/manage/${queue.id}`} className="w-full sm:w-auto">
+                <Button size="sm" className="w-full bg-waitless-green hover:bg-waitless-green/90 text-white">
+                  Manage Queue
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="flex flex-row justify-between gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-1/2"
+                onClick={() => handleAction("edit")}
+              >
+                <Edit className="mr-1 h-4 w-4" />
+                Update Queue
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-1/2 text-destructive border-destructive hover:bg-destructive/10"
+                onClick={() => handleAction("delete")}
+              >
+                <Trash2 className="mr-1 h-4 w-4" />
+                Delete Queue
+              </Button>
+            </div>
+          </>
+        )}
       </CardFooter>
 
     </Card>

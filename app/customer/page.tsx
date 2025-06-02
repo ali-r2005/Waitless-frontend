@@ -62,7 +62,7 @@ export default function CustomerQueuePage() {
         </Link>
         <div className="flex items-center">
           <Clock className="h-6 w-6 text-primary-teal" />
-          <span className="ml-2 text-lg font-semibold">QueueMaster</span>
+          <span className="ml-2 text-lg font-semibold">Waitless</span>
         </div>
         <div className="w-10"></div>
       </header>
@@ -143,7 +143,7 @@ export default function CustomerQueuePage() {
       </main>
 
       <footer className="border-t bg-background p-4 text-center text-sm text-muted-foreground">
-        <p>© 2023 QueueMaster. All rights reserved.</p>
+        <p>© 2023 Waitless. All rights reserved.</p>
       </footer>
     </div>
   )

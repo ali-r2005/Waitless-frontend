@@ -46,7 +46,7 @@ export function Footer() {
           </div>
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">QueueMaster</h3>
+            <h3 className="text-lg font-semibold mb-4">Waitless</h3>
             <ul className="space-y-2">
               <li className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#10bc69]" />
@@ -58,7 +58,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-[#10bc69]" />
-                <span>info@queuemaster.com</span>
+                <span>info@Waitless.com</span>
               </li>
             </ul>
           </div>
@@ -67,7 +67,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-700">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} QueueMaster. All rights reserved.
+              © {new Date().getFullYear()} Waitless. All rights reserved.
             </p>
             <div className="flex items-center gap-4 mt-4 md:mt-0">
               <a href="#" className="text-gray-400 hover:text-[#10bc69] transition-colors">

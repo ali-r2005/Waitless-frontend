@@ -5,10 +5,23 @@ import { Phone, Mail, MapPin } from "lucide-react"
 import { Footer } from "@/components/ui/footer"
 import { motion } from "framer-motion"
 import Image from "next/image"
-
-
+import { useAuth } from "@/lib/auth-context"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function HomePage() {
+  const { user, isAuthenticated } = useAuth()
+  const router = useRouter()
+  
+  useEffect(() => {
+    // Redirect authenticated users with specific roles to dashboard
+    if (isAuthenticated && user) {
+      const role = user.role?.toLowerCase()
+      if (role === "staff" || role === "business_owner" || role === "branch_manager") {
+        router.push("/dashboard")
+      }
+    }
+  }, [isAuthenticated, user, router])
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -152,7 +165,7 @@ export default function HomePage() {
               </div>
               <div className="lg:w-1/2">
                 <h2 className="text-3xl font-bold mb-6">
-                  Transform your customer experience with QueueMaster
+                  Transform your customer experience with Waitless
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-8 italic">
                   Advanced technology meets intuitive design to eliminate wait times and increase customer satisfaction.

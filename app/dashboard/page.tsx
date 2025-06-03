@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { OwnerDashboard } from "@/components/sections/dashboards/owner-dashboard"
 import { ManagerDashboard } from "@/components/sections/dashboards/manager-dashboard"
-import { StaffDashboard } from "@/components/sections/dashboards/staff-queue-monitor"
+import { StaffQueueMonitor } from "@/components/sections/dashboards/staff-queue-monitor"
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -61,9 +61,9 @@ export default function DashboardPage() {
   }
 
   // Role-based dashboards
-  if (user?.role === "business_owner") return <DashboardLayout><OwnerDashboard /></DashboardLayout>;
-  if (user?.role === "branch_manager") return <DashboardLayout><ManagerDashboard /></DashboardLayout>;
-  if (user?.role === "staff") return <DashboardLayout><StaffDashboard /></DashboardLayout>;
+  if (user?.role === "business_owner") return <DashboardLayout><div className="flex flex-col"><div className="flex-1 space-y-4 p-4 pt-6 md:p-8"><OwnerDashboard /></div></div></DashboardLayout>;
+  if (user?.role === "branch_manager") return <DashboardLayout><div className="flex flex-col"><div className="flex-1 space-y-4 p-4 pt-6 md:p-8"><ManagerDashboard /></div></div></DashboardLayout>;
+  if (user?.role === "staff") return <DashboardLayout><div className="flex flex-col"><div className="flex-1 space-y-4 p-4 pt-6 md:p-8"><StaffQueueMonitor user={user} /></div></div></DashboardLayout>;
   
   // Default fallback
   return (

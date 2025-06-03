@@ -161,13 +161,14 @@ export const queueService = {
 
   // Analytics Endpoints
   /**
-   * Retrieves a list of customers served today for a specific queue with statistics
-   * @param queue_id The ID of the queue
+   * Retrieves a list of customers served today for the authenticated staff with statistics
+   * Backend now handles filtering by authenticated staff
+   * @param queue_id Optional queue ID to filter by (not required with new API)
    * @returns Promise with the response containing served customers and statistics
    */
-  async getCustomersServedToday(queue_id: string) {
+  async getCustomersServedToday(queue_id?: string) {
     return api.get<ApiResponse<ServedCustomerStats>>(API_ENDPOINTS.QUEUE_MANAGEMENT.SERVED_TODAY, {
-      params: { queue_id }
+      params: queue_id ? { queue_id } : {}
     });
   },
   

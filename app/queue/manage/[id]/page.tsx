@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { PageHeader } from "@/components/ui/page-header"
-import { QueueDashboard } from "@/components/sections/dashboards/queue-dashboard"
+// QueueDashboard import removed - moved to staff-queue-monitor.tsx
 import { QueueCustomersTable } from "@/components/features/tables/queue-customers-table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { queueService } from "@/lib/queue-service"
@@ -20,7 +20,7 @@ import { toast } from "@/components/ui/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDate } from "@/lib/utils"
-import { QueueCustomer, ServedCustomer, QueueUpdate } from "@/types/queue"
+import { QueueCustomer, QueueUpdate } from "@/types/queue"
 import { getPrivateChannel } from "@/lib/pusher-service"
 
 export default function ManageQueuePage() {
@@ -42,14 +42,6 @@ export default function ManageQueuePage() {
   const [waitingCustomers, setWaitingCustomers] = useState<QueueCustomer[]>([])
   const [servingCustomers, setServingCustomers] = useState<QueueCustomer[]>([])
   const [lateCustomers, setLateCustomers] = useState<QueueCustomer[]>([])
-  const [servedCustomers, setServedCustomers] = useState<ServedCustomer[]>([])
-  
-  // Stats
-  const [servedStats, setServedStats] = useState<{
-    total_served: number;
-    average_waiting_time: number;
-    date: string;
-  } | null>(null)
   
   // Computed values for backward compatibility
   const isQueueActive = queueState === 'active' || queueState === 'ready_to_call'
@@ -144,25 +136,6 @@ export default function ManageQueuePage() {
     }
   }
   
-  // Fetch served customers
-  const fetchServedCustomers = async () => {
-    try {
-      const response = await queueService.getCustomersServedToday(id)
-      if (response.data?.data) {
-        const { served_customers, statistics } = response.data.data
-        // Add unique keys to served customers
-        const servedWithKeys = served_customers.map((customer, index) => ({
-          ...customer,
-          uniqueKey: `served-${customer.id}-${index}`
-        }))
-        setServedCustomers(servedWithKeys)
-        setServedStats(statistics)
-      }
-    } catch (err) {
-      console.error('Error fetching served customers:', err)
-    }
-  }
-  
   // Fetch late customers
   const fetchLateCustomers = async () => {
     try {
@@ -182,7 +155,7 @@ export default function ManageQueuePage() {
     
     // Fetch additional data in parallel for better performance
     await Promise.all([
-      fetchServedCustomers(),
+      fetchQueueCustomers(),
       fetchLateCustomers()
     ])
   }
@@ -237,7 +210,7 @@ export default function ManageQueuePage() {
         
         // Handle specific events
         if (data.customer_served) {
-          updates.push(fetchServedCustomers())
+          // Removed served customers logic
         }
         
         if (data.customer_late) {
@@ -572,24 +545,11 @@ export default function ManageQueuePage() {
             }
           />
 
-          <QueueDashboard queue={{
-            ...queue,
-            currentNumber: servingCustomers.length > 0 ? servingCustomers[0].pivot.position : 0,
-            totalInQueue: waitingCustomers.length + servingCustomers.length,
-            estimatedWaitTime: waitingCustomers.length > 0 ? `~${waitingCustomers.length * 5} min` : 'No wait',
-            averageServiceTime: servedStats?.average_waiting_time 
-              ? `${Math.round(servedStats.average_waiting_time / 60)} min` 
-              : 'N/A'
-          }} />
-
           <Tabs defaultValue="customer-waiting" className="space-y-4">
             <div className="flex justify-between items-center mb-2">
               <TabsList>
                 <TabsTrigger value="customer-waiting">
                   Customer waiting ({waitingCustomers.length + servingCustomers.length})
-                </TabsTrigger>
-                <TabsTrigger value="served">
-                  Served Today ({servedCustomers.length})
                 </TabsTrigger>
                 <TabsTrigger value="latecomers">
                   Latecomers ({lateCustomers.length})
@@ -649,64 +609,6 @@ export default function ManageQueuePage() {
                     onAction={handleCustomerAction} 
                     queueActive={isQueueActive && !isQueuePaused}
                   />
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="served">
-              <div className="rounded-md border">
-                <div className="relative w-full overflow-auto">
-                  <table className="w-full caption-bottom text-sm">
-                    <thead className="border-b bg-muted/50">
-                      <tr>
-                        <th className="h-12 px-4 text-left font-medium">Customer</th>
-                        <th className="h-12 px-4 text-left font-medium">Joined At</th>
-                        <th className="h-12 px-4 text-left font-medium">Served At</th>
-                        <th className="h-12 px-4 text-left font-medium">Wait Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {servedCustomers.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="text-center p-4 text-muted-foreground">
-                            No customers have been served today yet.
-                          </td>
-                        </tr>
-                      ) : (
-                        servedCustomers.map((customer) => (
-                          <tr key={customer.uniqueKey || `served-${customer.id}-${Math.random().toString(36).substr(2, 9)}`} className="border-b">
-                            <td className="p-4">
-                              <div className="flex items-center gap-3">
-                                <Avatar>
-                                  <AvatarImage src="/placeholder.svg" alt={customer.user.name} />
-                                  <AvatarFallback className="bg-primary-teal/10 text-primary-teal">
-                                    {customer.user.name.split(' ').map(n => n[0]).join('')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <div className="font-medium">{customer.user.name}</div>
-                                  <div className="text-sm text-muted-foreground">{customer.user.email}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="p-4">{formatDate(customer.created_at, { hour: 'numeric', minute: '2-digit' })}</td>
-                            <td className="p-4">{formatDate(customer.updated_at, { hour: 'numeric', minute: '2-digit' })}</td>
-                            <td className="p-4">{Math.round(customer.waiting_time / 60)} min</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                
-                {/* Statistics summary */}
-                {servedStats && (
-                  <div className="p-4 bg-muted/20 border-t">
-                    <div className="flex justify-between text-sm">
-                      <span>Total served today: <strong>{servedStats.total_served}</strong></span>
-                      <span>Average wait time: <strong>{Math.round(servedStats.average_waiting_time / 60)} minutes</strong></span>
-                    </div>
-                  </div>
                 )}
               </div>
             </TabsContent>

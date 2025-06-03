@@ -278,7 +278,7 @@ export function StaffQueueMonitor({ user: userProp }: { user: any }) {
                           <div className="flex items-center gap-3">
                             <Avatar>
                               <AvatarImage src="/placeholder.svg" alt={customer.user.name} />
-                              <AvatarFallback className="bg-primary-teal/10 text-primary-teal">
+                              <AvatarFallback className="bg-waitless-green bg-opacity-10 text-waitless-green">
                                 {customer.user.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
@@ -291,7 +291,7 @@ export function StaffQueueMonitor({ user: userProp }: { user: any }) {
                         <td className="p-4">{customer.queue?.name || 'Unknown Queue'}</td>
                         <td className="p-4">{formatDate(customer.created_at, { hour: 'numeric', minute: '2-digit' })}</td>
                         <td className="p-4">{formatDate(customer.updated_at, { hour: 'numeric', minute: '2-digit' })}</td>
-                        <td className="p-4">{Math.round(customer.waiting_time / 60)} min</td>
+                        <td className="p-4 text-waitless-green font-medium">{Math.round(customer.waiting_time / 60)} min</td>
                       </tr>
                     ))
                   )}
@@ -321,10 +321,10 @@ export function StaffQueueMonitor({ user: userProp }: { user: any }) {
                     </div>
                     <Progress 
                       value={(queue.total_served / statistics.total_served) * 100} 
-                      className="h-2" 
+                      className="h-2 bg-waitless-green/20" 
                     />
                     <div className="text-xs text-muted-foreground">
-                      Avg. wait time: {Math.round(queue.average_waiting_time / 60)} min
+                      Avg. wait time: <span className="text-waitless-green font-medium">{Math.round(queue.average_waiting_time / 60)} min</span>
                     </div>
                   </div>
                 ))}

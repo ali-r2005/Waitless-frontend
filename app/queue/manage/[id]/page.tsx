@@ -501,7 +501,7 @@ export default function ManageQueuePage() {
                 {queueState === 'inactive' && (
                   <Button
                     variant="default"
-                    className="bg-primary-teal hover:bg-primary-teal/90"
+                    className="bg-waitless-green hover:bg-waitless-green/90 text-white"
                     onClick={toggleQueueStatus}
                   >
                     <Play className="mr-2 h-4 w-4" />
@@ -513,7 +513,7 @@ export default function ManageQueuePage() {
                 {queueState !== 'inactive' && (
                   <Button
                     variant="outline"
-                    className="border-primary-teal text-primary-teal hover:bg-primary-teal/10"
+                    className="border-waitless-green text-waitless-green hover:bg-waitless-green/10"
                     onClick={toggleQueuePaused}
                   >
                     {queueState === 'paused' ? (
@@ -533,14 +533,13 @@ export default function ManageQueuePage() {
                 {/* Add Customer Button */}
                 <Link href={`/queue/${id}/add-customer`}>
                   <Button 
-                    className="bg-primary-teal hover:bg-primary-teal/90"
+                    className="bg-waitless-green hover:bg-waitless-green/90 text-white"
                     disabled={!isQueueActive || isQueuePaused}
                   >
                     <UserPlus className="mr-2 h-4 w-4" />
                     Add Customer
                   </Button>
                 </Link>
-                
               </>
             }
           />
@@ -558,7 +557,7 @@ export default function ManageQueuePage() {
               
               {/* Call Next Customer Button - Positioned near the tabs */}
               <Button 
-                className="bg-primary-teal hover:bg-primary-teal/90 ml-4"
+                className="bg-waitless-green hover:bg-waitless-green/90 text-white ml-4"
                 onClick={callNextCustomer}
                 disabled={queueState !== 'active' || isCallNextDisabled || waitingCustomers.length === 0}
               >
@@ -640,7 +639,7 @@ export default function ManageQueuePage() {
                               <div className="flex items-center gap-3">
                                 <Avatar>
                                   <AvatarImage src="/placeholder.svg" alt={customer.name} />
-                                  <AvatarFallback className="bg-primary-teal/10 text-primary-teal">
+                                  <AvatarFallback className="bg-waitless-green bg-opacity-10 text-waitless-green">
                                     {customer.name.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>
                                 </Avatar>
@@ -651,8 +650,8 @@ export default function ManageQueuePage() {
                               </div>
                             </td>
                             <td className="p-4">{customer.pivot?.ticket_number || '-'}</td>
-                            <td className="p-4">{formatDate(customer.pivot?.created_at, { hour: 'numeric', minute: '2-digit' })}</td>
-                            <td className="p-4">{formatDate(customer.pivot?.late_at, { hour: 'numeric', minute: '2-digit' })}</td>
+                            <td className="p-4">{customer.pivot?.created_at ? formatDate(customer.pivot.created_at, { hour: 'numeric', minute: '2-digit' }) : '-'}</td>
+                            <td className="p-4">{customer.pivot?.late_at ? formatDate(customer.pivot.late_at, { hour: 'numeric', minute: '2-digit' }) : '-'}</td>
                             <td className="p-4">
                               <Button 
                                 variant="outline" 

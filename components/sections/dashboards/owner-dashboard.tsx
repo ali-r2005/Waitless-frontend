@@ -145,16 +145,20 @@ export function OwnerDashboard() {
     fetchData()
   }, [retryCount])
   
-  // Calculate Top Performing Branch (shortest avg wait time)
+  // Helper function to format seconds as mm:ss
+  const formatTimeMMSS = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  // Calculate the top performing branch based on lowest average wait time
   const topPerformingBranch = useMemo(() => {
-    if (!statistics?.branches || statistics.branches.length === 0) return null
+    if (!statistics?.branches?.length) return null
     
-    return statistics.branches.reduce((best, current) => {
-      if (current.average_waiting_time < best.average_waiting_time) {
-        return current
-      }
-      return best
-    }, statistics.branches[0])
+    return [...statistics.branches].sort((a, b) => 
+      a.average_waiting_time - b.average_waiting_time
+    )[0]
   }, [statistics])
   
   // Loading state
@@ -212,9 +216,9 @@ export function OwnerDashboard() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
         <div className="flex justify-center">
-          <Button onClick={() => setRetryCount(prev => prev + 1)} className="mt-2">
-            Retry
-          </Button>
+              <Button onClick={() => setRetryCount(prev => prev + 1)} className="mt-2 bg-waitless-green hover:bg-waitless-green/90 text-white">
+                Retry
+              </Button>
         </div>
       </div>
     )
@@ -313,7 +317,7 @@ export function OwnerDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">
               {statistics?.average_waiting_time ? 
-                `${Math.round(statistics.average_waiting_time / 60)} min` : 
+                formatTimeMMSS(statistics.average_waiting_time) : 
                 'N/A'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -342,7 +346,7 @@ export function OwnerDashboard() {
                     </div>
                     <Progress 
                       value={(branch.total_served / statistics.total_served) * 100} 
-                      className="h-2" 
+                      className="h-2 bg-waitless-green/20"
                     />
                   </div>
                 ))}
@@ -368,13 +372,13 @@ export function OwnerDashboard() {
                   <div key={branch.branch_id} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium">{branch.branch_name}</span>
-                      <span>{Math.round(branch.average_waiting_time / 60)} min</span>
+                      <span>{formatTimeMMSS(branch.average_waiting_time)}</span>
                     </div>
                     <Progress 
                       value={(branch.average_waiting_time / (statistics.branches?.reduce(
                         (max, b) => Math.max(max, b.average_waiting_time), 1
                       ) || 1)) * 100} 
-                      className="h-2" 
+                      className="h-2 bg-waitless-green/20"
                     />
                   </div>
                 ))}
@@ -390,10 +394,10 @@ export function OwnerDashboard() {
       
       {/* Top Performing Branch */}
       {topPerformingBranch && (
-        <Card className="mt-6 border-2 border-primary/20">
+        <Card className="mt-6 border-2 border-waitless-green/20">
           <CardHeader>
             <div className="flex items-center">
-              <Award className="h-5 w-5 mr-2 text-primary" />
+              <Award className="h-5 w-5 mr-2 text-waitless-green" />
               <CardTitle>Top Performing Branch</CardTitle>
             </div>
             <CardDescription>Branch with the shortest average wait time today</CardDescription>
@@ -401,15 +405,15 @@ export function OwnerDashboard() {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold">{topPerformingBranch.branch_name}</h3>
+                <h3 className="text-xl font-bold text-waitless-green">{topPerformingBranch.branch_name}</h3>
                 <div className="text-sm text-muted-foreground mt-1">
                   <span className="font-medium">{topPerformingBranch.total_served}</span> customers served today
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-bold text-primary">
-                  {Math.round(topPerformingBranch.average_waiting_time / 60)} min
-                </div>
+                <h4 className="scroll-m-20 text-base font-semibold tracking-tight">
+                  {formatTimeMMSS(topPerformingBranch.average_waiting_time)} avg. wait
+                </h4>
                 <div className="text-sm text-muted-foreground">
                   Average wait time
                 </div>
@@ -425,10 +429,12 @@ export function OwnerDashboard() {
                     <div key={queue.queue_id} className="bg-muted/50 p-2 rounded-md">
                       <div className="flex items-center justify-between text-sm">
                         <span>{queue.queue_name}</span>
-                        <Badge variant="outline">{queue.total_served} served</Badge>
+                        <Badge variant="outline" className="border-waitless-green bg-white text-waitless-green hover:bg-waitless-green/10 dark:bg-dark-500">
+                          {queue.total_served} served
+                        </Badge>
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Avg wait: {Math.round(queue.average_waiting_time / 60)} min
+                        Avg wait: {formatTimeMMSS(queue.average_waiting_time)}
                       </div>
                     </div>
                   ))}

@@ -26,6 +26,14 @@ export interface Queue {
   totalInQueue?: number
   estimatedWaitTime?: string
   description?: string
+  // Additional properties used in dashboard components
+  queue_state?: 'active' | 'paused' | 'inactive' | 'ready_to_call'
+  currentServing?: {
+    user_id: number | null
+    ticket_number: string | null
+  }
+  averageServiceTime?: string
+  nextAvailableCustomer?: any
 }
 
 export type QueueStatus = "active" | "paused" | "closed"
@@ -168,4 +176,5 @@ export interface QueueUpdate {
   customer_late?: boolean
   total_customers?: number
   average_service_time?: string
+  next_available_customer?: any
 }

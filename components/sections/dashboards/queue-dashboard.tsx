@@ -56,13 +56,13 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
   const getStatusBadge = () => {
     switch (queueState) {
       case 'active':
-        return <Badge className="bg-green-500">Active</Badge>
+        return <Badge className="bg-waitless-green text-white">Active</Badge>
       case 'paused':
         return <Badge variant="secondary"><Pause className="mr-1 h-3 w-3" />Paused</Badge>
       case 'inactive':
         return <Badge variant="outline">Inactive</Badge>
       case 'ready_to_call':
-        return <Badge className="bg-blue-500"><Play className="mr-1 h-3 w-3" />Ready to Call</Badge>
+        return <Badge className="bg-waitless-green bg-opacity-80 text-white"><Play className="mr-1 h-3 w-3" />Ready to Call</Badge>
       default:
         return null
     }
@@ -77,7 +77,7 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
             <div className="flex items-center gap-2">
               {getStatusBadge()}
               {isConnected ? (
-                <Badge variant="outline" className="text-green-500 border-green-200 bg-green-50">Live</Badge>
+                <Badge variant="outline" className="text-waitless-green border-waitless-green border-opacity-20 bg-waitless-green bg-opacity-5">Live</Badge>
               ) : (
                 <Badge variant="outline" className="text-amber-500 border-amber-200 bg-amber-50">Connecting...</Badge>
               )}
@@ -97,7 +97,7 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Now Serving</CardTitle>
-            <User className="h-4 w-4 text-primary-teal" />
+            <User className="h-4 w-4 text-waitless-green" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{currentServing?.ticket_number || 'None'}</div>
@@ -108,7 +108,7 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total in Queue</CardTitle>
-            <Users className="h-4 w-4 text-primary-teal" />
+            <Users className="h-4 w-4 text-waitless-green" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCustomers}</div>
@@ -119,7 +119,7 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Avg. Service Time</CardTitle>
-            <Clock className="h-4 w-4 text-primary-teal" />
+            <Clock className="h-4 w-4 text-waitless-green" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{averageServiceTime}</div>
@@ -130,7 +130,7 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Next Customer</CardTitle>
-            <User className="h-4 w-4 text-primary-teal" />
+            <User className="h-4 w-4 text-waitless-green" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{nextCustomer?.ticket_number || 'N/A'}</div>
@@ -151,7 +151,7 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
                 <span>Current: {currentServing?.ticket_number || 'N/A'}</span>
                 <span>Total: {totalCustomers}</span>
               </div>
-              <Progress value={progressPercentage} className="h-2" />
+              <Progress value={progressPercentage} className="h-2 bg-waitless-green/20" />
             </div>
           </div>
         </CardContent>

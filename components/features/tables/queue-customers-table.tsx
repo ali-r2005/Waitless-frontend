@@ -48,12 +48,12 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
       {servingCustomers.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 font-medium">
-            <Clock className="h-5 w-5 text-primary-teal" />
+            <Clock className="h-5 w-5 text-waitless-green" />
             <h3>Now Serving</h3>
           </div>
           <div className="grid gap-4">
             {servingCustomers.map((customer) => (
-              <Card key={customer.uniqueKey || `${customer.id}-${customer.pivot?.status}`} className="border-primary-teal">
+              <Card key={customer.uniqueKey || `${customer.id}-${customer.pivot?.status}`} className="border-waitless-green">
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -64,7 +64,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                         <div>
                           <div className="flex items-center gap-2 font-medium">
                             {customer.name}
-                            <Badge className="bg-primary-teal">Current</Badge>
+                            <Badge className="bg-waitless-green">Current</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">{customer.email || customer.phone}</p>
                         </div>
@@ -118,7 +118,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                       Mark as Late
                     </Button>
                     <Button
-                      className="flex-1 bg-primary-teal hover:bg-primary-teal/90"
+                      className="flex-1 bg-waitless-green hover:bg-waitless-green/90"
                       onClick={() => handleAction("complete", customer.id.toString())}
                       disabled={!queueActive}
                     >
@@ -137,7 +137,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
       {waitingCustomers.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 font-medium">
-            <User className="h-5 w-5 text-primary-teal" />
+            <User className="h-5 w-5 text-waitless-green" />
             <h3>Waiting ({waitingCustomers.length})</h3>
           </div>
           <div className="rounded-md border">
@@ -169,7 +169,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                     <td className="p-3">{customer.pivot?.ticket_number || 'N/A'}</td>
                     <td className="p-3">#{customer.pivot?.position || 0}</td>
                     <td className="p-3">{customer.pivot?.created_at ? formatDate(customer.pivot.created_at, { hour: 'numeric', minute: '2-digit' }) : 'N/A'}</td>
-                    <td className="p-3">{Math.round((customer.pivot?.waiting_time || 0) / 60)} min</td>
+                    <td className="p-3 text-waitless-green font-medium">{Math.round((customer.pivot?.waiting_time || 0) / 60)} min</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Button

@@ -60,6 +60,7 @@ export interface QueueCustomer {
   lateAt?: string | null
   priority?: "normal" | "high" | "urgent"
   avatar?: string
+  uniqueKey?: string
   // New properties from API response
   pivot?: {
     queue_id: number

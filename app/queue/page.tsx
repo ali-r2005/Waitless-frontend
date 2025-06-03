@@ -85,15 +85,14 @@ export default function QueuePage() {
     if (isBusinessOwner) return false
     
     // Branch manager and staff can only manage queues assigned to them
-    if ((isBranchManager || isStaff) && queue.staff_id) {
-      return queue.staff_id.toString() === user?.staff?.id?.toString()
+    if (isBranchManager || isStaff) {
+      return true
     }
     
     return false
   }
   
-  // Check if user can add new queues (only branch managers)
-  const canAddQueue = isBranchManager
+  const canAddQueue = isBranchManager || isStaff
 
   // Fetch queues and branches
   useEffect(() => {

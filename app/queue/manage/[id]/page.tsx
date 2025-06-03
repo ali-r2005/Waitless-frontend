@@ -55,7 +55,7 @@ export default function ManageQueuePage() {
   const isQueueActive = queueState === 'active' || queueState === 'ready_to_call'
   const isQueuePaused = queueState === 'paused'
   
-  // Filtered customers for search
+  // Filtered customers for search with truly unique keys
   const allCustomersInQueue = [...waitingCustomers, ...servingCustomers].filter(customer => {
     if (!searchQuery) return true
     const query = searchQuery.toLowerCase()
@@ -65,6 +65,12 @@ export default function ManageQueuePage() {
       customer.phone?.toLowerCase().includes(query) ||
       customer.service?.toLowerCase().includes(query)
     )
+  }).map((customer, index) => {
+    // Create a truly unique key by combining id, status, and index
+    return {
+      ...customer,
+      uniqueKey: `${customer.id}-${customer.pivot?.status}-${index}`
+    }
   })
   
   // Fetch queue details
@@ -103,10 +109,23 @@ export default function ManageQueuePage() {
     // Group customers by their status
     // Note: API may return 'serving' or 'being_served' depending on backend implementation
     const waiting = users.filter(user => user.pivot?.status === 'waiting')
+      .map((user, index) => ({
+        ...user,
+        uniqueKey: `${user.id}-${user.pivot?.status}-${index}`
+      }))
+    
     const serving = users.filter(user => 
       user.pivot?.status === 'serving' || user.pivot?.status === 'being_served'
-    )
+    ).map((user, index) => ({
+      ...user,
+      uniqueKey: `${user.id}-${user.pivot?.status}-${index}`
+    }))
+    
     const late = users.filter(user => user.pivot?.status === 'late')
+      .map((user, index) => ({
+        ...user,
+        uniqueKey: `${user.id}-${user.pivot?.status}-${index}`
+      }))
     
     setWaitingCustomers(waiting)
     setServingCustomers(serving)
@@ -131,7 +150,12 @@ export default function ManageQueuePage() {
       const response = await queueService.getCustomersServedToday(id)
       if (response.data?.data) {
         const { served_customers, statistics } = response.data.data
-        setServedCustomers(served_customers)
+        // Add unique keys to served customers
+        const servedWithKeys = served_customers.map((customer, index) => ({
+          ...customer,
+          uniqueKey: `served-${customer.id}-${index}`
+        }))
+        setServedCustomers(servedWithKeys)
         setServedStats(statistics)
       }
     } catch (err) {
@@ -629,7 +653,7 @@ export default function ManageQueuePage() {
                         </tr>
                       ) : (
                         servedCustomers.map((customer) => (
-                          <tr key={customer.id} className="border-b">
+                          <tr key={customer.uniqueKey || `served-${customer.id}-${Math.random().toString(36).substr(2, 9)}`} className="border-b">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <Avatar>
@@ -688,7 +712,7 @@ export default function ManageQueuePage() {
                         </tr>
                       ) : (
                         lateCustomers.map((customer) => (
-                          <tr key={customer.id} className="border-b">
+                          <tr key={customer.uniqueKey || `${customer.id}-${customer.pivot?.status}-${Math.random().toString(36).substr(2, 9)}`} className="border-b">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <Avatar>

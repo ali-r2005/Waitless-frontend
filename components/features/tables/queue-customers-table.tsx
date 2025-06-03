@@ -53,7 +53,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
           </div>
           <div className="grid gap-4">
             {servingCustomers.map((customer) => (
-              <Card key={customer.id} className="border-primary-teal">
+              <Card key={customer.uniqueKey || `${customer.id}-${customer.pivot?.status}`} className="border-primary-teal">
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -154,7 +154,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
               </thead>
               <tbody>
                 {waitingCustomers.map((customer) => (
-                  <tr key={customer.id} className="border-t">
+                  <tr key={customer.uniqueKey || `${customer.id}-${customer.pivot?.status}`} className="border-t">
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">

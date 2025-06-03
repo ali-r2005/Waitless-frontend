@@ -536,6 +536,27 @@ export default function ManageQueuePage() {
                   </Button>
                 )}
                 
+                {/* Pause/Resume Queue Button - Only show when queue is active or paused */}
+                {queueState !== 'inactive' && (
+                  <Button
+                    variant="outline"
+                    className="border-primary-teal text-primary-teal hover:bg-primary-teal/10"
+                    onClick={toggleQueuePaused}
+                  >
+                    {queueState === 'paused' ? (
+                      <>
+                        <Play className="mr-2 h-4 w-4" />
+                        Resume Queue
+                      </>
+                    ) : (
+                      <>
+                        <Pause className="mr-2 h-4 w-4" />
+                        Pause Queue
+                      </>
+                    )}
+                  </Button>
+                )}
+                
                 {/* Add Customer Button */}
                 <Link href={`/queue/${id}/add-customer`}>
                   <Button 

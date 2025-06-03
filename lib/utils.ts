@@ -1,4 +1,40 @@
 import { type ClassValue, clsx } from "clsx"
+export function formatSecondsFriendly(totalSeconds: number | string | undefined | null): string {
+  if (totalSeconds === null || totalSeconds === undefined) {
+    return 'N/A';
+  }
+
+  let seconds = typeof totalSeconds === 'string' ? Number(totalSeconds) : totalSeconds;
+
+  if (isNaN(seconds) || seconds < 0) {
+    return 'N/A';
+  }
+
+  // Round to the nearest whole number to clean up floating point artifacts
+  seconds = Math.round(seconds);
+
+  if (seconds === 0) {
+    return '0s';
+  }
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  const parts: string[] = [];
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+  }
+  if (minutes > 0) {
+    parts.push(`${minutes}m`);
+  }
+  if (remainingSeconds > 0 || parts.length === 0) {
+    parts.push(`${remainingSeconds}s`);
+  }
+
+  return parts.join(' ');
+}
+
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {

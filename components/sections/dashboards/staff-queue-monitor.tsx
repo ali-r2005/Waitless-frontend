@@ -4,12 +4,11 @@ import { useState, useEffect } from "react"
 import { Clock, Users, BarChart4, Activity, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { QueueDashboard } from "@/components/sections/dashboards/queue-dashboard"
 import { queueService } from "@/lib/queue-service"
-import { formatDate } from "@/lib/utils"
+import { formatDate, formatSecondsFriendly } from "@/lib/utils"
 // useAuth removed as we're now receiving user as a prop
 
 // Define the new statistics interface based on the updated API response
@@ -110,7 +109,7 @@ export function StaffQueueMonitor({ user: userProp }: { user: any }) {
                   totalInQueue: 0,  // Will be updated from API
                   estimatedWaitTime: 'N/A',
                   averageServiceTime: statistics ? 
-                    `${Math.round(statistics.average_waiting_time / 60)} min` : 
+                    formatSecondsFriendly(statistics.average_waiting_time) : 
                     'N/A'
                 })
                 
@@ -226,7 +225,7 @@ export function StaffQueueMonitor({ user: userProp }: { user: any }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {statistics ? `${Math.round(statistics.average_waiting_time / 60)} min` : 'N/A'}
+              {statistics ? formatSecondsFriendly(statistics.average_waiting_time) : 'N/A'}
             </div>
             <p className="text-xs text-muted-foreground">Per customer</p>
           </CardContent>
@@ -291,7 +290,7 @@ export function StaffQueueMonitor({ user: userProp }: { user: any }) {
                         <td className="p-4">{customer.queue?.name || 'Unknown Queue'}</td>
                         <td className="p-4">{formatDate(customer.created_at, { hour: 'numeric', minute: '2-digit' })}</td>
                         <td className="p-4">{formatDate(customer.updated_at, { hour: 'numeric', minute: '2-digit' })}</td>
-                        <td className="p-4 text-waitless-green font-medium">{Math.round(customer.waiting_time / 60)} min</td>
+                        <td className="p-4 text-waitless-green font-medium">{formatSecondsFriendly(customer.waiting_time)}</td>
                       </tr>
                     ))
                   )}
@@ -324,7 +323,7 @@ export function StaffQueueMonitor({ user: userProp }: { user: any }) {
                       className="h-2 bg-waitless-green/20" 
                     />
                     <div className="text-xs text-muted-foreground">
-                      Avg. wait time: <span className="text-waitless-green font-medium">{Math.round(queue.average_waiting_time / 60)} min</span>
+                      Avg. wait time: <span className="text-waitless-green font-medium">{formatSecondsFriendly(queue.average_waiting_time)}</span>
                     </div>
                   </div>
                 ))}

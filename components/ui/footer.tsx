@@ -49,10 +49,6 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">Waitless</h3>
             <ul className="space-y-2">
               <li className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#10bc69]" />
-                <span>PSV+CCW, Av. des Forces Armées Royales, Tanger</span>
-              </li>
-              <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#10bc69]" />
                 <span>+1 5589 55488 55</span>
               </li>

@@ -16,6 +16,7 @@ import { branchService } from "@/lib/branch-service"
 import { staffService } from "@/lib/staff-service"
 import { queueService } from "@/lib/queue-service"
 import { Button } from "@/components/ui/button"
+import { formatSecondsFriendly } from "@/lib/utils"
 
 // Define interfaces for data types
 interface Branch {
@@ -145,13 +146,6 @@ export function OwnerDashboard() {
     fetchData()
   }, [retryCount])
   
-  // Helper function to format seconds as mm:ss
-  const formatTimeMMSS = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
-
   // Calculate the top performing branch based on lowest average wait time
   const topPerformingBranch = useMemo(() => {
     if (!statistics?.branches?.length) return null
@@ -317,7 +311,7 @@ export function OwnerDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">
               {statistics?.average_waiting_time ? 
-                formatTimeMMSS(statistics.average_waiting_time) : 
+                formatSecondsFriendly(statistics.average_waiting_time) : 
                 'N/A'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -372,7 +366,7 @@ export function OwnerDashboard() {
                   <div key={branch.branch_id} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium">{branch.branch_name}</span>
-                      <span>{formatTimeMMSS(branch.average_waiting_time)}</span>
+                      <span>{formatSecondsFriendly(branch.average_waiting_time)}</span>
                     </div>
                     <Progress 
                       value={(branch.average_waiting_time / (statistics.branches?.reduce(
@@ -412,7 +406,7 @@ export function OwnerDashboard() {
               </div>
               <div className="text-right">
                 <h4 className="scroll-m-20 text-base font-semibold tracking-tight">
-                  {formatTimeMMSS(topPerformingBranch.average_waiting_time)} avg. wait
+                  {formatSecondsFriendly(topPerformingBranch.average_waiting_time)} avg. wait
                 </h4>
                 <div className="text-sm text-muted-foreground">
                   Average wait time
@@ -434,7 +428,7 @@ export function OwnerDashboard() {
                         </Badge>
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Avg wait: {formatTimeMMSS(queue.average_waiting_time)}
+                        Avg wait: {formatSecondsFriendly(queue.average_waiting_time)}
                       </div>
                     </div>
                   ))}

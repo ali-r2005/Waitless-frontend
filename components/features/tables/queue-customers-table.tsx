@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { formatDate } from "@/lib/utils"
+import { formatDate, formatSecondsFriendly } from "@/lib/utils"
 import type { QueueCustomer } from "@/types/queue"
 
 interface QueueCustomersTableProps {
@@ -103,7 +103,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                     </div>
                     <div>
                       <p className="text-muted-foreground">Wait Time</p>
-                      <p className="font-medium">{Math.round((customer.pivot?.waiting_time || 0) / 60)} min</p>
+                      <p className="font-medium">{formatSecondsFriendly(customer.pivot?.waiting_time)}</p>
                     </div>
                   </div>
 
@@ -169,7 +169,7 @@ export function QueueCustomersTable({ customers, onAction, queueActive = true }:
                     <td className="p-3">{customer.pivot?.ticket_number || 'N/A'}</td>
                     <td className="p-3">#{customer.pivot?.position || 0}</td>
                     <td className="p-3">{customer.pivot?.created_at ? formatDate(customer.pivot.created_at, { hour: 'numeric', minute: '2-digit' }) : 'N/A'}</td>
-                    <td className="p-3 text-waitless-green font-medium">{Math.round((customer.pivot?.waiting_time || 0) / 60)} min</td>
+                    <td className="p-3 text-waitless-green font-medium">{formatSecondsFriendly(customer.pivot?.waiting_time)}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Button

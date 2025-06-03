@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ArrowLeft, Bell, Clock, QrCode } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, Bell, Clock, Info, QrCode } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 
 import { useAuth } from "@/lib/auth-context"
@@ -10,6 +12,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { formatSecondsFriendly } from "@/lib/utils"
+import { Loader2 } from "lucide-react" // Added Loader2 for loading states
+import { queueService } from "@/lib/queue-service" // Added import
 
 interface QueueUpdatePayload {
   queue_id: number
@@ -22,7 +27,7 @@ interface QueueUpdatePayload {
     id: number
     name: string
     ticket_number: string
-  }
+  } | null
   position: number
   customers_ahead: number
   total_customers: number
@@ -31,25 +36,94 @@ interface QueueUpdatePayload {
 export default function CustomerQueuePage() {
   const { user, isLoading } = useAuth()
   const [queueData, setQueueData] = useState<QueueUpdatePayload | null>(null)
+  const [isLeaving, setIsLeaving] = useState(false) // Added loading state for leaving queue
+  const router = useRouter() // Added for redirection
+  const [initialDataLoadAttempted, setInitialDataLoadAttempted] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) return
+    if (isLoading) return; // Wait for user loading to complete
 
-    const channel = getPrivateChannel(`update.${user.id}`)
+    if (!user?.id) {
+      setInitialDataLoadAttempted(true); // No user ID after loading, so mark attempt
+      return;
+    }
+
+    const channel = getPrivateChannel(`update.${user.id}`);
+    let receivedData = false;
 
     channel.listen('.App\\Events\\SendUpdate', (event: { update: { data: QueueUpdatePayload } }) => {
-      setQueueData(event.update.data)
-    })
+      setQueueData(event.update.data);
+      receivedData = true;
+      if (!initialDataLoadAttempted) {
+         setInitialDataLoadAttempted(true);
+      }
+    });
+
+    // Set a timeout to mark data load attempt as complete even if no event comes
+    const timer = setTimeout(() => {
+      if (!receivedData) {
+        setInitialDataLoadAttempted(true);
+      }
+    }, 7000); // 7 seconds timeout (increased from 5s)
 
     return () => {
-      channel.stopListening('.App\\Events\\SendUpdate')
-      if (typeof window !== 'undefined' && window.Echo) {
-        window.Echo.leave(`update.${user.id}`)
+      clearTimeout(timer);
+      channel.stopListening('.App\\Events\\SendUpdate');
+      if (typeof window !== 'undefined' && window.Echo && user?.id) { // ensure user.id for leave
+        window.Echo.leave(`update.${user.id}`);
       }
-    }
-  }, [user?.id])
+    };
+  }, [user?.id, isLoading, initialDataLoadAttempted]);
 
-  if (isLoading || !queueData) return <div className="p-4 text-center">Loading your queue data...</div>
+  if (isLoading) return <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 text-center"><Loader2 className="h-8 w-8 animate-spin text-waitless-green mb-4" />Loading user information...</div>;
+
+  if (!user) { 
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 text-center">
+        <Info className="h-12 w-12 text-destructive mb-4" />
+        <p className="mb-4 text-lg font-semibold">User Not Authenticated</p>
+        <p className="text-muted-foreground mb-6">Please log in to view your queue status.</p>
+        <Button asChild className="bg-waitless-green hover:bg-waitless-green/90 text-white">
+          <Link href="/auth/login">Go to Login</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (!initialDataLoadAttempted && !queueData) return <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 text-center"><Loader2 className="h-8 w-8 animate-spin text-waitless-green mb-4" />Connecting to queue service...</div>;
+
+  if (initialDataLoadAttempted && !queueData) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 text-center">
+        <Info className="h-16 w-16 text-waitless-green mb-6" />
+        <h1 className="text-3xl font-bold mb-3">Not in Queue</h1>
+        <p className="text-muted-foreground mb-8 max-w-sm">It seems you are not currently part of any active queue. If you believe this is an error, please try refreshing or contact support.</p>
+        <Button asChild className="bg-waitless-green hover:bg-waitless-green/90 text-white px-8 py-3 text-lg">
+          <Link href="/">Go to Homepage</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (!queueData) return <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 text-center"><Loader2 className="h-8 w-8 animate-spin text-waitless-green mb-4" />Loading queue data...</div>;
+
+  const handleLeaveQueue = async () => {
+    if (!user || !queueData) return
+
+    setIsLeaving(true)
+    try {
+      await queueService.removeCustomerFromQueue(String(queueData.queue_id), String(user.id))
+      // Optionally, show a success message or redirect
+      alert("You have left the queue.") // Simple alert for now
+      router.push('/') // Redirect to homepage
+    } catch (error) {
+      console.error("Failed to leave queue:", error)
+      // Optionally, show an error message to the user
+      alert("Failed to leave the queue. Please try again.")
+    } finally {
+      setIsLeaving(false)
+    }
+  }
 
   const progress = Math.max(0, Math.min(100, 100 - (queueData.position / queueData.total_customers) * 100))
 
@@ -61,7 +135,7 @@ export default function CustomerQueuePage() {
           <span className="font-medium">Back</span>
         </Link>
         <div className="flex items-center">
-          <Clock className="h-6 w-6 text-primary-teal" />
+          <Clock className="h-6 w-6 text-waitless-green" />
           <span className="ml-2 text-lg font-semibold">Waitless</span>
         </div>
         <div className="w-10"></div>
@@ -69,6 +143,15 @@ export default function CustomerQueuePage() {
 
       <main className="flex-1 p-4 md:p-6">
         <div className="mx-auto max-w-md space-y-6">
+          {queueData.is_paused && (
+            <Alert variant="default" className="mb-6 bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-900/40 dark:border-yellow-700 dark:text-yellow-300 shadow-md">
+              <Info className="h-5 w-5 text-yellow-700 dark:text-yellow-400" />
+              <AlertTitle className="font-semibold text-lg">Queue Paused</AlertTitle>
+              <AlertDescription className="mt-1">
+                This queue is currently paused by the administration. Your position is saved, and service will resume shortly. Please wait for updates.
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="text-center">
             <h1 className="text-2xl font-bold">{queueData.queue_name}</h1>
           </div>
@@ -77,12 +160,12 @@ export default function CustomerQueuePage() {
             <CardHeader className="pb-2 text-center">
               <CardTitle className="text-xl">Your Queue Status</CardTitle>
               <CardDescription>
-                Currently Serving: #{queueData.current_customer.ticket_number}
+                Currently Serving: #{queueData.current_customer?.ticket_number ?? 'N/A'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-center">
               <div className="flex flex-col items-center justify-center rounded-full bg-primary-teal/10 p-6">
-                <span className="text-4xl font-bold text-primary-teal">#{queueData.position}</span>
+                <span className="text-4xl font-bold text-waitless-green">#{queueData.position}</span>
                 <span className="text-sm text-muted-foreground">Your Position</span>
               </div>
 
@@ -97,11 +180,11 @@ export default function CustomerQueuePage() {
               <div className="grid grid-cols-2 gap-4 rounded-lg border p-4">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">Estimated Wait</p>
-                  <p className="text-lg font-semibold text-primary-teal">{queueData.estimated_waiting_time}</p>
+                  <p className="text-lg font-semibold text-waitless-green">{formatSecondsFriendly(queueData.estimated_waiting_time)}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">Avg. Service Time</p>
-                  <p className="text-lg font-semibold">{Math.round(queueData.average_service_time)}s</p>
+                  <p className="text-lg font-semibold">{formatSecondsFriendly(queueData.average_service_time)}</p>
                 </div>
               </div>
 
@@ -111,31 +194,12 @@ export default function CustomerQueuePage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
-              <Button className="w-full bg-primary-teal hover:bg-primary-teal/90">
+              <Button className="w-full bg-waitless-green hover:bg-waitless-green/90 text-white">
                 <Bell className="mr-2 h-4 w-4" />
                 Notify Me When It's My Turn
               </Button>
-              <Button variant="outline" className="w-full text-destructive hover:bg-destructive/10">
-                Leave Queue
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center text-lg">Share Your Queue Link</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center">
-              <div className="mb-4 rounded-lg bg-white p-2">
-                <QrCode className="h-32 w-32 text-primary-teal" />
-              </div>
-              <p className="text-center text-sm text-muted-foreground">
-                Scan this code or share the link below to check your queue status from another device
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                Copy Link
+              <Button variant="outline" className="w-full text-destructive hover:bg-destructive/10" onClick={handleLeaveQueue} disabled={isLeaving}>
+                {isLeaving ? "Leaving..." : "Leave Queue"}
               </Button>
             </CardFooter>
           </Card>
@@ -143,7 +207,7 @@ export default function CustomerQueuePage() {
       </main>
 
       <footer className="border-t bg-background p-4 text-center text-sm text-muted-foreground">
-        <p>© 2023 Waitless. All rights reserved.</p>
+        <p>© 2025 Waitless. All rights reserved.</p>
       </footer>
     </div>
   )

@@ -11,6 +11,7 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import type { Queue, QueueUpdate } from "@/types/queue"
+import { formatSecondsFriendly } from "@/lib/utils"
 import { getPrivateChannel } from "@/lib/pusher-service"
 
 interface QueueDashboardProps {
@@ -122,7 +123,7 @@ export function QueueDashboard({ queue }: QueueDashboardProps) {
             <Clock className="h-4 w-4 text-waitless-green" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{averageServiceTime}</div>
+            <div className="text-2xl font-bold">{formatSecondsFriendly(averageServiceTime)}</div>
             <p className="text-xs text-muted-foreground">Per customer</p>
           </CardContent>
         </Card>

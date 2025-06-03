@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { PageHeader } from "@/components/ui/page-header"
-// QueueDashboard import removed - moved to staff-queue-monitor.tsx
 import { QueueCustomersTable } from "@/components/features/tables/queue-customers-table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { queueService } from "@/lib/queue-service"

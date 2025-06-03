@@ -314,7 +314,6 @@ export function Navbar() {
                   <div className="px-2 py-1 text-sm font-semibold">{user.name || user.email}</div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-red-600">Log Out</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -459,7 +458,6 @@ export function Navbar() {
                       <div className="px-2 py-1 text-sm font-semibold">{user.name || user.email}</div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout} className="text-red-600">Log Out</DropdownMenuItem>
                     </DropdownMenuContent>
